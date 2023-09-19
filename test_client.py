@@ -1,7 +1,7 @@
 import socket
 import os
 
-os.system('test_client.py')
+os.system('title test_client.py')
 
 def send_data_to_server(data, header):
     # Initialize the client socket

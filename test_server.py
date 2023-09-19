@@ -3,7 +3,7 @@ import os
 # Uncomment the next line if you're going to use threading
 # import threading
 
-os.system('test_server.py')
+os.system('title test_server.py')
 
 # Initialize dictionaries to hold employee states and info.
 # State '0' is clocked-out, and '1' is clocked-in.
