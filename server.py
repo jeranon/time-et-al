@@ -1,4 +1,7 @@
 import socket
+import os
+
+os.system('server.py')
 
 # Initialize dictionaries to hold employee states and info.
 # State '0' is clocked-out, and '1' is clocked-in.
