@@ -1,0 +1,11 @@
+{
+    "pay_period": {
+        "reference_start_date": "2023-10-01",
+        "length_in_days": 14
+    },
+    "paths": {
+        "time_scans": "data/time_scans",
+        "logs": "data/logs",
+        "reference": "data/reference"
+    }
+}
