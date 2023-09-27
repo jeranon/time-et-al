@@ -1,7 +1,26 @@
 import socket
 import os
+import json
 
 os.system('title server.py')
+
+# Check if critical directories and files exist
+required_dirs = ["data", "data/reference", "data/logs", "data/time_scans", "data/config"]
+required_files = ["data/reference/employees.json", "data/reference/server_ip.json", "data/reference/clients.json", "data/config/config.json"]
+
+for directory in required_dirs:
+    if not os.path.exists(directory):
+        print(f"Critical directory {directory} is missing. Please run setup.py to initialize the environment.")
+        exit()
+
+for file in required_files:
+    if not os.path.exists(file):
+        print(f"Critical file {file} is missing. Please run setup.py to initialize the environment.")
+        exit()
+
+# Load configurations from config.json
+with open("data/config/config.json", 'r') as config_file:
+    configs = json.load(config_file)
 
 # Initialize dictionaries to hold employee states and info.
 # State '0' is clocked-out, and '1' is clocked-in.

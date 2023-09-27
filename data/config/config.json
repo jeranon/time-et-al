@@ -1,0 +1,9 @@
+{
+    "paths": {
+        "base_dir": "data",
+        "reference_dir": "data/reference",
+        "logs_dir": "data/logs",
+        "time_scans_dir": "data/time_scans"
+    },
+    "pay_period_start_date": "2023-09-17"
+}
