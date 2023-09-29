@@ -1,4 +1,4 @@
 
-data/*.json
-data/reference/*.json
-config/*.json
+data/**/*.json
+data/**/*.txt
+config/**/*.json
