@@ -36,3 +36,88 @@
 [2023-09-29 11:44:14] [00000024] [ERROR] Failed to process data for employee Darren Schnubledeebopp. Name/ID Mismatch.
 [2023-09-29 11:44:15] [00000025] [TRANSACTION] Employee Darren Schnurr clocked out.
 [2023-09-29 11:44:17] [00000026] [TRANSACTION] Employee Darren Schnurr clocked in.
+[2023-09-29 13:22:55] [00000027] [TRANSACTION] Employee Adam Reid clocked in.
+[2023-09-29 13:22:59] [00000028] [TRANSACTION] Employee Sammy Tolentino clocked in.
+[2023-09-29 13:23:02] [00000029] [TRANSACTION] Employee Danny Morrice clocked in.
+[2023-09-29 13:23:05] [0000002A] [TRANSACTION] Employee Dexter VanDerMaat clocked in.
+[2023-09-29 13:23:09] [0000002B] [TRANSACTION] Employee Sabre Bend clocked in.
+[2023-09-29 13:23:13] [0000002C] [TRANSACTION] Employee Braeden Dahl clocked in.
+[2023-09-29 13:23:18] [0000002D] [TRANSACTION] Employee Devon Koch clocked in.
+[2023-09-29 13:23:21] [0000002E] [TRANSACTION] Employee Damon Hall clocked in.
+[2023-09-29 13:23:24] [0000002F] [TRANSACTION] Employee Grzegorz Solak clocked in.
+[2023-09-29 13:23:28] [00000030] [TRANSACTION] Employee Cody Robinson clocked in.
+[2023-09-29 13:23:33] [00000031] [TRANSACTION] Employee Branden Reimer clocked in.
+[2023-09-29 13:23:38] [00000032] [TRANSACTION] Employee Carey Benson clocked in.
+[2023-09-29 13:23:41] [00000033] [TRANSACTION] Employee Jackson Hendrickson clocked in.
+[2023-09-29 13:23:44] [00000034] [TRANSACTION] Employee Darren Riley clocked in.
+[2023-09-29 13:23:47] [00000035] [TRANSACTION] Employee Granville Bartlett clocked in.
+[2023-09-29 13:23:50] [00000036] [TRANSACTION] Employee Liam Horner clocked in.
+[2023-09-29 13:23:53] [00000037] [TRANSACTION] Employee Clay Larocque clocked in.
+[2023-09-29 13:23:56] [00000038] [TRANSACTION] Employee Vincent O'Connell clocked in.
+[2023-09-29 13:24:00] [00000039] [TRANSACTION] Employee Jeremy Schultz clocked in.
+[2023-09-29 13:24:02] [0000003A] [TRANSACTION] Employee James Duffy clocked in.
+[2023-09-29 13:24:05] [0000003B] [TRANSACTION] Employee Tyler Yeomans clocked in.
+[2023-09-29 13:24:07] [0000003C] [TRANSACTION] Employee Vincent Ubay clocked in.
+[2023-09-29 13:24:11] [0000003D] [TRANSACTION] Employee Joshua Barkman clocked in.
+[2023-09-29 13:24:14] [0000003E] [TRANSACTION] Employee Devon Oakes clocked in.
+[2023-09-29 13:24:17] [0000003F] [TRANSACTION] Employee Levi Wilk clocked in.
+[2023-09-29 13:24:20] [00000040] [TRANSACTION] Employee Adam Pulford clocked in.
+[2023-09-29 13:24:23] [00000041] [TRANSACTION] Employee James Crispell clocked in.
+[2023-09-29 13:24:27] [00000042] [TRANSACTION] Employee Zachary Keewatincappo clocked in.
+[2023-09-29 13:24:31] [00000043] [TRANSACTION] Employee Carson Robertson clocked in.
+[2023-09-29 13:24:33] [00000044] [TRANSACTION] Employee Darren Schnurr clocked in.
+[2023-09-29 13:24:37] [00000045] [TRANSACTION] Employee Gerald Barkman clocked in.
+[2023-09-29 13:24:40] [00000046] [TRANSACTION] Employee Scott Nickerson clocked in.
+[2023-09-29 13:24:44] [00000047] [TRANSACTION] Employee Ashton Hall clocked in.
+[2023-09-29 13:24:47] [00000048] [TRANSACTION] Employee Caleb Paulson clocked in.
+[2023-09-29 13:24:52] [00000049] [TRANSACTION] Employee Logan Ahern clocked in.
+[2023-09-29 13:24:55] [0000004A] [TRANSACTION] Employee Rachel Froese clocked in.
+[2023-09-29 13:24:58] [0000004B] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 13:25:01] [0000004C] [TRANSACTION] Employee Adam Reid clocked out.
+[2023-09-29 13:37:23] [0000004D] [TRANSACTION] Employee Adam Reid with ID 117 created and clocked-in.
+[2023-09-29 13:38:12] [0000004E] [TRANSACTION] Employee Sammy Tolentino with ID 72 created and clocked-in.
+[2023-09-29 13:38:17] [0000004F] [TRANSACTION] Employee Danny Morrice with ID 0001 created and clocked-in.
+[2023-09-29 13:38:18] [00000050] [TRANSACTION] Employee Dexter VanDerMaat with ID 27 created and clocked-in.
+[2023-09-29 13:38:20] [00000051] [TRANSACTION] Employee Sabre Bend with ID 0129 created and clocked-in.
+[2023-09-29 13:38:21] [00000052] [TRANSACTION] Employee Braeden Dahl with ID 115 created and clocked-in.
+[2023-09-29 13:38:22] [00000053] [TRANSACTION] Employee Devon Koch with ID 98 created and clocked-in.
+[2023-09-29 13:38:24] [00000054] [TRANSACTION] Employee Damon Hall with ID 119 created and clocked-in.
+[2023-09-29 13:38:25] [00000055] [TRANSACTION] Employee Grzegorz Solak with ID 80 created and clocked-in.
+[2023-09-29 13:38:26] [00000056] [TRANSACTION] Employee Cody Robinson with ID 124 created and clocked-in.
+[2023-09-29 13:38:28] [00000057] [TRANSACTION] Employee Branden Reimer with ID 0135 created and clocked-in.
+[2023-09-29 13:38:29] [00000058] [TRANSACTION] Employee Carey Benson with ID 74 created and clocked-in.
+[2023-09-29 13:38:31] [00000059] [TRANSACTION] Employee Jackson Hendrickson with ID 36 created and clocked-in.
+[2023-09-29 13:38:32] [0000005A] [TRANSACTION] Employee Darren Riley with ID 61 created and clocked-in.
+[2023-09-29 13:38:34] [0000005B] [TRANSACTION] Employee Granville Bartlett with ID 108 created and clocked-in.
+[2023-09-29 13:38:36] [0000005C] [TRANSACTION] Employee Liam Horner with ID 0148 created and clocked-in.
+[2023-09-29 13:38:38] [0000005D] [TRANSACTION] Employee Clay Larocque with ID 109 created and clocked-in.
+[2023-09-29 13:38:40] [0000005E] [TRANSACTION] Employee Vincent O'Connell with ID 44 created and clocked-in.
+[2023-09-29 13:38:41] [0000005F] [TRANSACTION] Employee Jeremy Schultz with ID 43 created and clocked-in.
+[2023-09-29 13:38:42] [00000060] [TRANSACTION] Employee James Duffy with ID 0170 created and clocked-in.
+[2023-09-29 13:38:44] [00000061] [TRANSACTION] Employee Tyler Yeomans with ID 69 created and clocked-in.
+[2023-09-29 13:38:45] [00000062] [TRANSACTION] Employee Vincent Ubay with ID 0180 created and clocked-in.
+[2023-09-29 13:38:46] [00000063] [TRANSACTION] Employee Joshua Barkman with ID 0012 created and clocked-in.
+[2023-09-29 13:38:47] [00000064] [TRANSACTION] Employee Devon Oakes with ID 77 created and clocked-in.
+[2023-09-29 13:38:48] [00000065] [TRANSACTION] Employee Levi Wilk with ID 118 created and clocked-in.
+[2023-09-29 13:38:50] [00000066] [TRANSACTION] Employee Adam Pulford with ID 121 created and clocked-in.
+[2023-09-29 13:38:51] [00000067] [TRANSACTION] Employee James Crispell with ID 31 created and clocked-in.
+[2023-09-29 13:38:52] [00000068] [TRANSACTION] Employee Zachary Keewatincappo with ID 107 created and clocked-in.
+[2023-09-29 13:38:55] [00000069] [TRANSACTION] Employee Carson Robertson with ID 52 created and clocked-in.
+[2023-09-29 13:38:56] [0000006A] [TRANSACTION] Employee Darren Schnurr with ID 0130 created and clocked-in.
+[2023-09-29 13:38:58] [0000006B] [TRANSACTION] Employee Gerald Barkman with ID 17 created and clocked-in.
+[2023-09-29 13:38:59] [0000006C] [TRANSACTION] Employee Scott Nickerson with ID 51 created and clocked-in.
+[2023-09-29 13:39:00] [0000006D] [TRANSACTION] Employee Ashton Hall with ID 125 created and clocked-in.
+[2023-09-29 13:39:01] [0000006E] [TRANSACTION] Employee Caleb Paulson with ID 57 created and clocked-in.
+[2023-09-29 13:39:02] [0000006F] [TRANSACTION] Employee Logan Ahern with ID 0184 created and clocked-in.
+[2023-09-29 13:39:03] [00000070] [TRANSACTION] Employee Rachel Froese with ID 0151 created and clocked-in.
+[2023-09-29 13:39:04] [00000071] [TRANSACTION] Employee Reece Woycheshyn with ID 105 created and clocked-in.
+[2023-09-29 13:40:15] [00000072] [TRANSACTION] Employee Reece Woycheshyn clocked out.
+[2023-09-29 13:40:18] [00000073] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 13:40:19] [00000074] [TRANSACTION] Employee Reece Woycheshyn clocked out.
+[2023-09-29 13:40:20] [00000075] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 13:40:23] [00000076] [TRANSACTION] Employee Reece Woycheshyn clocked out.
+[2023-09-29 13:41:15] [00000077] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 13:41:21] [00000078] [TRANSACTION] Employee Rachel Froese clocked out.
+[2023-09-29 13:41:22] [00000079] [TRANSACTION] Employee Reece Woycheshyn clocked out.
+[2023-09-29 13:41:32] [0000007A] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 13:41:33] [0000007B] [TRANSACTION] Employee Rachel Froese clocked in.

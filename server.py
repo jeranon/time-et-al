@@ -63,11 +63,15 @@ def initialize_employee_data():
     with open("data/reference/employees.json", "r") as file:
         employee_data = json.load(file)
 
+    # Load employee states if the file exists
+    if os.path.exists("data/reference/employee_states.json"):
+        with open("data/reference/employee_states.json", "r") as state_file:
+            saved_states = json.load(state_file)
+        for emp_id, state in saved_states.items():
+            employee_states[emp_id] = state
+
     for emp_id, emp_name in employee_data.items():
         employee_info[emp_id] = emp_name
-        # For simplicity, we'll assume all employees are clocked out when the server starts.
-        # If you have a mechanism to track the last state of employees, you can adjust this.
-        employee_states[emp_id] = 0
 
 # Initialize the server socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -136,6 +140,10 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
+def save_employee_states():
+    with open("data/reference/employee_states.json", "w") as file:
+        json.dump(employee_states, file, indent=4)
+
 def handle_clock_in_out(data, client_address):
     employee_id, employee_name = data.split("|")[:2]
 
@@ -166,6 +174,7 @@ def handle_clock_in_out(data, client_address):
     write_time_data(employee_id, employee_name, employee_states[employee_id], client_info)
     update_employee_data(employee_id, employee_name)
     update_client_data(client_info)
+    save_employee_states()
 
     client_socket.sendall(f"{message}\n".encode())
 
@@ -208,4 +217,5 @@ try:
 except KeyboardInterrupt:
     print("\nGracefully shutting down the server...")
     server_socket.close()
+    
     print("Server shut down. Goodbye!")
