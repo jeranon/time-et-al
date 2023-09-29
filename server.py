@@ -120,6 +120,11 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
     year = datetime.now().year
     file_path = f"data/time_scans/{year}/{start_date}.json"
     
+    # Ensure directory exists before writing the file
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
     if not os.path.exists(file_path):
         with open(file_path, 'w') as file:
             json.dump({}, file)
