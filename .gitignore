@@ -1,4 +1,5 @@
 
 data/**/*.json
+data/**/*.log
 data/**/*.txt
 config/**/*.json
