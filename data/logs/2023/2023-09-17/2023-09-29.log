@@ -1,0 +1,38 @@
+[2023-09-29 11:35:33] [00000001] [TRANSACTION] Employee Rachel Froese clocked in.
+[2023-09-29 11:38:43] [00000002] [TRANSACTION] Employee Branden Reimer clocked in.
+[2023-09-29 11:38:47] [00000003] [TRANSACTION] Employee Carey Benson clocked in.
+[2023-09-29 11:38:49] [00000004] [TRANSACTION] Employee Jackson Hendrickson clocked in.
+[2023-09-29 11:38:52] [00000005] [TRANSACTION] Employee Liam Horner clocked in.
+[2023-09-29 11:38:56] [00000006] [TRANSACTION] Employee Clay Larocque clocked in.
+[2023-09-29 11:38:59] [00000007] [TRANSACTION] Employee Vincent O'Connell clocked in.
+[2023-09-29 11:39:02] [00000008] [TRANSACTION] Employee Jeremy Schultz clocked in.
+[2023-09-29 11:39:12] [00000009] [TRANSACTION] Employee James Duffy clocked in.
+[2023-09-29 11:39:17] [0000000A] [TRANSACTION] Employee Tyler Yeomans clocked in.
+[2023-09-29 11:40:26] [0000000B] [TRANSACTION] Employee Vincent Ubay clocked in.
+[2023-09-29 11:40:29] [0000000C] [TRANSACTION] Employee Joshua Barkman clocked in.
+[2023-09-29 11:40:33] [0000000D] [TRANSACTION] Employee Devon Oakes clocked in.
+[2023-09-29 11:40:36] [0000000E] [TRANSACTION] Employee Levi Wilk clocked in.
+[2023-09-29 11:40:41] [0000000F] [TRANSACTION] Employee Adam Pulford clocked in.
+[2023-09-29 11:40:44] [00000010] [TRANSACTION] Employee James Crispell clocked in.
+[2023-09-29 11:40:51] [00000011] [TRANSACTION] Employee Zachary Keewatincappo clocked in.
+[2023-09-29 11:40:55] [00000012] [TRANSACTION] Employee Carson Robertson clocked in.
+[2023-09-29 11:41:01] [00000013] [TRANSACTION] Employee Carson Robertson clocked out.
+[2023-09-29 11:41:04] [00000014] [TRANSACTION] Employee Darren Schnurr clocked in.
+[2023-09-29 11:41:31] [00000015] [TRANSACTION] Employee Darren Schnurr clocked out.
+[2023-09-29 11:41:35] [00000016] [TRANSACTION] Employee Gerald Barkman clocked in.
+[2023-09-29 11:41:39] [00000017] [TRANSACTION] Employee Scott Nickerson clocked in.
+[2023-09-29 11:41:42] [00000018] [TRANSACTION] Employee Ashton Hall clocked in.
+[2023-09-29 11:41:46] [00000019] [TRANSACTION] Employee Caleb Paulson clocked in.
+[2023-09-29 11:41:50] [0000001A] [TRANSACTION] Employee Logan Ahern clocked in.
+[2023-09-29 11:41:54] [0000001B] [TRANSACTION] Employee Rachel Froese clocked out.
+[2023-09-29 11:41:57] [0000001C] [TRANSACTION] Employee Rachel Froese clocked in.
+[2023-09-29 11:42:00] [0000001D] [TRANSACTION] Employee Reece Woycheshyn clocked in.
+[2023-09-29 11:42:59] [0000001E] [ERROR] Failed to process data for employee Darren Schnubledeebopp. Name/ID Mismatch.
+[2023-09-29 11:43:34] [0000001F] [TRANSACTION] Employee Darren Schnurr clocked in.
+[2023-09-29 11:43:42] [00000020] [ERROR] Failed to process data for employee Darren Schnubledeebopp. Name/ID Mismatch.
+[2023-09-29 11:44:05] [00000021] [TRANSACTION] Employee Darren Schnurr clocked out.
+[2023-09-29 11:44:08] [00000022] [TRANSACTION] Employee Darren Schnurr clocked in.
+[2023-09-29 11:44:11] [00000023] [ERROR] Failed to process data for employee Darren Schnubledeebopp. Name/ID Mismatch.
+[2023-09-29 11:44:14] [00000024] [ERROR] Failed to process data for employee Darren Schnubledeebopp. Name/ID Mismatch.
+[2023-09-29 11:44:15] [00000025] [TRANSACTION] Employee Darren Schnurr clocked out.
+[2023-09-29 11:44:17] [00000026] [TRANSACTION] Employee Darren Schnurr clocked in.

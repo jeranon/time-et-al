@@ -97,6 +97,20 @@ def increment_transaction_counter():
     set_transaction_counter(counter)
     return format(counter, '08X')
 
+def log_event(event_type, message):
+    transaction_id = increment_transaction_counter()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_year = datetime.now().year
+    start_date, _ = get_current_pay_period()
+    log_path = f"data/logs/{current_year}/{start_date}/{datetime.now().strftime('%Y-%m-%d')}.log"
+    
+    # Ensure directory exists
+    if not os.path.exists(os.path.dirname(log_path)):
+        os.makedirs(os.path.dirname(log_path))
+    
+    with open(log_path, 'a') as log_file:
+        log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
+
 def write_time_data(employee_id, employee_name, clock_status, client_info):
     start_date, _ = get_current_pay_period()
     year = datetime.now().year
@@ -130,15 +144,19 @@ def handle_clock_in_out(data, client_address):
             if employee_states[employee_id] == 0:
                 employee_states[employee_id] = 1
                 message = f"Employee {employee_name} is now clocked in."
+                log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
             else:
                 employee_states[employee_id] = 0
                 message = f"Employee {employee_name} is now clocked out."
+                log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
         else:
             message = "Employee ID and name mismatch. Check your input."
+            log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
     else:
         employee_states[employee_id] = 1
         employee_info[employee_id] = employee_name
         message = f"New employee {employee_name} with ID {employee_id} created."
+        log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
 
     client_info = {
         "ip": client_address[0],  # This captures the client's IP from the provided client_address
