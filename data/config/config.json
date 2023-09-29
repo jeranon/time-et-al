@@ -5,5 +5,12 @@
         "logs_dir": "data/logs",
         "time_scans_dir": "data/time_scans"
     },
-    "pay_period_start_date": "2023-09-17"
+    "pay_period": {
+        "start_date": "2023-09-17",
+        "duration_days": 14
+    },
+    "work_day": {
+        "start_hour": 5,
+        "end_hour": 4
+    }
 }

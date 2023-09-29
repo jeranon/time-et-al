@@ -1,31 +1,73 @@
 import socket
 import os
 import json
+from datetime import datetime, timedelta
 
-os.system('title server.py')
+# Function to get the server's IP address
+def get_server_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # We use a dummy IP here to establish a connection in the OS and fetch the local endpoint IP
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
 
-# Check if critical directories and files exist
-required_dirs = ["data", "data/reference", "data/logs", "data/time_scans", "data/config"]
-required_files = ["data/reference/employees.json", "data/reference/server_ip.json", "data/reference/clients.json", "data/config/config.json"]
+# Function to get configuration data from config.json
+def get_config_data():
+    with open("data/config/config.json", "r") as file:
+        config_data = json.load(file)
+    return config_data
 
-for directory in required_dirs:
-    if not os.path.exists(directory):
-        print(f"Critical directory {directory} is missing. Please run setup.py to initialize the environment.")
-        exit()
+# Update the server IP in server_ip.json if it has changed
+def update_server_ip():
+    current_ip = get_server_ip()
+    with open("data/reference/server_ip.json", "r") as file:
+        stored_ip_data = json.load(file)
+    if stored_ip_data["ip"] != current_ip:
+        stored_ip_data["ip"] = current_ip
+        with open("data/reference/server_ip.json", "w") as file:
+            json.dump(stored_ip_data, file, indent=4)
 
-for file in required_files:
-    if not os.path.exists(file):
-        print(f"Critical file {file} is missing. Please run setup.py to initialize the environment.")
-        exit()
+# Fetch the current pay period based on the start date and duration
+def get_current_pay_period():
+    config = get_config_data()
+    start_date = datetime.strptime(config["pay_period"]["start_date"], "%Y-%m-%d")
+    duration = timedelta(days=config["pay_period"]["duration_days"])
+    end_date = start_date + duration
 
-# Load configurations from config.json
-with open("data/config/config.json", 'r') as config_file:
-    configs = json.load(config_file)
+    current_date = datetime.now()
+
+    # Adjust the current date based on the work day start hour
+    work_day_start_hour = config["work_day"]["start_hour"]
+    if current_date.hour < work_day_start_hour:
+        current_date -= timedelta(days=1)
+
+    while not start_date <= current_date < end_date:
+        start_date += duration
+        end_date += duration
+
+    return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
 
 # Initialize dictionaries to hold employee states and info.
 # State '0' is clocked-out, and '1' is clocked-in.
 employee_states = {}
 employee_info = {}
+
+def initialize_employee_data():
+    global employee_states, employee_info
+
+    # If the employees.json file doesn't exist, we don't do anything.
+    if not os.path.exists("data/reference/employees.json"):
+        return
+
+    with open("data/reference/employees.json", "r") as file:
+        employee_data = json.load(file)
+
+    for emp_id, emp_name in employee_data.items():
+        employee_info[emp_id] = emp_name
+        # For simplicity, we'll assume all employees are clocked out when the server starts.
+        # If you have a mechanism to track the last state of employees, you can adjust this.
+        employee_states[emp_id] = 0
 
 # Initialize the server socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,8 +75,55 @@ server_socket.bind(('0.0.0.0', 8000))
 server_socket.listen(5)
 print("Listening on 0.0.0.0:8000")
 
-def handle_clock_in_out(data, client_socket):
-    employee_id, employee_name = data.split("|")
+TRANSACTION_COUNTER_FILE = "data/reference/transaction_counter.txt"
+
+def get_transaction_counter():
+    """Fetch the current transaction counter. If file doesn't exist, initialize it."""
+    if os.path.exists(TRANSACTION_COUNTER_FILE):
+        with open(TRANSACTION_COUNTER_FILE, 'r') as file:
+            return int(file.read().strip(), 16)  # Convert hex string to integer
+    else:
+        set_transaction_counter(0)
+        return 0
+
+def set_transaction_counter(value):
+    """Set the transaction counter to a new value."""
+    with open(TRANSACTION_COUNTER_FILE, 'w') as file:
+        file.write(format(value, '08X'))  # Convert integer to 8-digit hex string
+
+def increment_transaction_counter():
+    """Increment the transaction counter and return its new value in 8-digit hex format."""
+    counter = get_transaction_counter() + 1
+    set_transaction_counter(counter)
+    return format(counter, '08X')
+
+def write_time_data(employee_id, employee_name, clock_status, client_info):
+    start_date, _ = get_current_pay_period()
+    year = datetime.now().year
+    file_path = f"data/time_scans/{year}/{start_date}.json"
+    
+    if not os.path.exists(file_path):
+        with open(file_path, 'w') as file:
+            json.dump({}, file)
+    
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if employee_id not in data:
+        data[employee_id] = []
+    data[employee_id].append({
+        "timestamp": current_timestamp,
+        "name": employee_name,
+        "status": "in" if clock_status == 1 else "out",
+        "client_info": client_info
+    })
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+def handle_clock_in_out(data, client_address):
+    employee_id, employee_name = data.split("|")[:2]
 
     if employee_id in employee_states:
         if employee_info[employee_id] == employee_name:
@@ -51,21 +140,54 @@ def handle_clock_in_out(data, client_socket):
         employee_info[employee_id] = employee_name
         message = f"New employee {employee_name} with ID {employee_id} created."
 
+    client_info = {
+        "ip": client_address[0],  # This captures the client's IP from the provided client_address
+        "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"  # This captures the machine name if provided
+    }
+    
+    write_time_data(employee_id, employee_name, employee_states[employee_id], client_info)
+    update_employee_data(employee_id, employee_name)
+    update_client_data(client_info)
+
     client_socket.sendall(f"{message}\n".encode())
+
+def update_employee_data(employee_id, employee_name):
+    with open("data/reference/employees.json", "r") as file:
+        employees = json.load(file)
+    if employee_id not in employees:
+        employees[employee_id] = employee_name
+        with open("data/reference/employees.json", "w") as file:
+            json.dump(employees, file, indent=4)
+
+def update_client_data(client_info):
+    with open("data/reference/clients.json", "r") as file:
+        clients = json.load(file)
+    if client_info["ip"] not in [client["ip"] for client in clients]:
+        clients.append(client_info)
+        with open("data/reference/clients.json", "w") as file:
+            json.dump(clients, file, indent=4)
 
 def handle_job_tracking(data, client_socket):
     # Placeholder for your job tracking logic
     pass
 
-while True:
-    client_socket, client_address = server_socket.accept()
-    print(f"Accepted connection from {client_address}")
+update_server_ip()
+initialize_employee_data()
 
-    data = client_socket.recv(1024).decode().strip()
+try:
+    while True:
+        client_socket, client_address = server_socket.accept()
+        print(f"Accepted connection from {client_address}")
 
-    if data.startswith("CLOCK:"):
-        handle_clock_in_out(data[6:], client_socket)  # Pass everything after "CLOCK:"
-    elif data.startswith("JOB:"):
-        handle_job_tracking(data[4:], client_socket)  # Pass everything after "JOB:"
+        data = client_socket.recv(1024).decode().strip()
 
-    client_socket.close()
+        if data.startswith("CLOCK:"):
+            handle_clock_in_out(data[6:], client_address)  # Pass everything after "CLOCK:"
+        elif data.startswith("JOB:"):
+            handle_job_tracking(data[4:], client_socket)  # Pass everything after "JOB:"
+
+        client_socket.close()
+except KeyboardInterrupt:
+    print("\nGracefully shutting down the server...")
+    server_socket.close()
+    print("Server shut down. Goodbye!")

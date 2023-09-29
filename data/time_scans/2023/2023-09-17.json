@@ -1,0 +1,634 @@
+{
+    "17": [
+        {
+            "timestamp": "2023-09-29 10:06:53",
+            "name": "Gerald Barkman",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:07:01",
+            "name": "Gerald Barkman",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:07:54",
+            "name": "Gerald Barkman",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0130": [
+        {
+            "timestamp": "2023-09-29 10:06:58",
+            "name": "Darren Schnurr",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:07:03",
+            "name": "Darren Schnurr",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:07:53",
+            "name": "Darren Schnurr",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "52": [
+        {
+            "timestamp": "2023-09-29 10:07:58",
+            "name": "Carson Robertson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "107": [
+        {
+            "timestamp": "2023-09-29 10:08:00",
+            "name": "Zachary Keewatincappo",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "31": [
+        {
+            "timestamp": "2023-09-29 10:08:02",
+            "name": "James Crispell",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "121": [
+        {
+            "timestamp": "2023-09-29 10:08:04",
+            "name": "Adam Pulford",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "118": [
+        {
+            "timestamp": "2023-09-29 10:08:06",
+            "name": "Levi Wilk",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "77": [
+        {
+            "timestamp": "2023-09-29 10:08:08",
+            "name": "Devon Oakes",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0012": [
+        {
+            "timestamp": "2023-09-29 10:08:09",
+            "name": "Joshua Barkman",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0180": [
+        {
+            "timestamp": "2023-09-29 10:08:11",
+            "name": "Vincent Ubay",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:53:58",
+            "name": "Vincent Ubay",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "69": [
+        {
+            "timestamp": "2023-09-29 10:08:13",
+            "name": "Tyler Yeomans",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0170": [
+        {
+            "timestamp": "2023-09-29 10:08:15",
+            "name": "James Duffy",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "43": [
+        {
+            "timestamp": "2023-09-29 10:08:17",
+            "name": "Jeremy Schultz",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "44": [
+        {
+            "timestamp": "2023-09-29 10:08:19",
+            "name": "Vincent O'Connell",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "109": [
+        {
+            "timestamp": "2023-09-29 10:08:21",
+            "name": "Clay Larocque",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0148": [
+        {
+            "timestamp": "2023-09-29 10:08:23",
+            "name": "Liam Horner",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "108": [
+        {
+            "timestamp": "2023-09-29 10:08:25",
+            "name": "Granville Bartlett",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "61": [
+        {
+            "timestamp": "2023-09-29 10:08:26",
+            "name": "Darren Riley",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "36": [
+        {
+            "timestamp": "2023-09-29 10:08:28",
+            "name": "Jackson Hendrickson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:53:53",
+            "name": "Jackson Hendrickson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "74": [
+        {
+            "timestamp": "2023-09-29 10:08:30",
+            "name": "Carey Benson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0135": [
+        {
+            "timestamp": "2023-09-29 10:08:32",
+            "name": "Branden Reimer",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "124": [
+        {
+            "timestamp": "2023-09-29 10:08:33",
+            "name": "Cody Robinson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "80": [
+        {
+            "timestamp": "2023-09-29 10:08:35",
+            "name": "Grzegorz Solak",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "119": [
+        {
+            "timestamp": "2023-09-29 10:08:37",
+            "name": "Damon Hall",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "98": [
+        {
+            "timestamp": "2023-09-29 10:08:38",
+            "name": "Devon Koch",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:08:41",
+            "name": "Devon Koch",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:08:42",
+            "name": "Devon Koch",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "115": [
+        {
+            "timestamp": "2023-09-29 10:08:45",
+            "name": "Braeden Dahl",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0129": [
+        {
+            "timestamp": "2023-09-29 10:08:46",
+            "name": "Sabre Bend",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "27": [
+        {
+            "timestamp": "2023-09-29 10:08:48",
+            "name": "Dexter VanDerMaat",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0001": [
+        {
+            "timestamp": "2023-09-29 10:08:49",
+            "name": "Danny Morrice",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "72": [
+        {
+            "timestamp": "2023-09-29 10:08:51",
+            "name": "Sammy Tolentino",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "117": [
+        {
+            "timestamp": "2023-09-29 10:08:53",
+            "name": "Adam Reid",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:33",
+            "name": "Adam Reid",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:34",
+            "name": "Adam Reid",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:37",
+            "name": "Adam Reid",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "57": [
+        {
+            "timestamp": "2023-09-29 10:08:54",
+            "name": "Caleb Paulson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "125": [
+        {
+            "timestamp": "2023-09-29 10:08:56",
+            "name": "Ashton Hall",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:32",
+            "name": "Ashton Hall",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:53:38",
+            "name": "Ashton Hall",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0184": [
+        {
+            "timestamp": "2023-09-29 10:08:58",
+            "name": "Logan Ahern",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:27",
+            "name": "Logan Ahern",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:53:45",
+            "name": "Logan Ahern",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "105": [
+        {
+            "timestamp": "2023-09-29 10:09:01",
+            "name": "Reece Woycheshyn",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "0151": [
+        {
+            "timestamp": "2023-09-29 10:09:02",
+            "name": "Rachel Froese",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:36:19",
+            "name": "Rachel Froese",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:50:19",
+            "name": "Rachel Froese",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:55:01",
+            "name": "Jeremy Schultz",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ],
+    "51": [
+        {
+            "timestamp": "2023-09-29 10:09:04",
+            "name": "Scott Nickerson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:13",
+            "name": "Scott Nickerson",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:18",
+            "name": "Scott Nickerson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:21",
+            "name": "Scott Nickerson",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:27",
+            "name": "Scott Nickerson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:30",
+            "name": "Scott Nickerson",
+            "status": "out",
+            "client_info": {
+                "ip": "192.168.1.122",
+                "name": "Jesse-PC"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:10:34",
+            "name": "Scott Nickerson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        },
+        {
+            "timestamp": "2023-09-29 10:35:23",
+            "name": "Scott Nickerson",
+            "status": "in",
+            "client_info": {
+                "ip": "192.168.1.106",
+                "name": "DESKTOP-T96KCFB"
+            }
+        }
+    ]
+}

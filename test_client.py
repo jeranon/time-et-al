@@ -1,33 +1,29 @@
 import socket
+import json
 import os
 
-os.system('title test_client.py')
+# Fetch the server IP address from server_ip.json
+def get_server_ip():
+    with open("data/reference/server_ip.json", "r") as file:
+        ip_data = json.load(file)
+    return ip_data["ip"]
 
-def send_data_to_server(data, header):
-    # Initialize the client socket
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Get the local machine's hostname
+def get_machine_name():
+    return socket.gethostname()
 
-    # Connect to the server
-    client_socket.connect(('127.0.0.1', 8000))  # Replace with your server's IP and port
+server_ip = get_server_ip()
 
-    # Concatenate header and data
-    full_data = f"{header}:{data}\n"
+while True:
+    employee_data = input("Please scan or enter employee data (format: ####|first surname) or type 'exit' to quit: ")
+    if employee_data.lower() == "exit":
+        break
 
-    # Send the data to the server
-    client_socket.sendall(full_data.encode())
+    machine_name = get_machine_name()
+    full_data = f"CLOCK:{employee_data}|{machine_name}"
 
-    # Receive data from the server
-    received_data = client_socket.recv(1024)
-    print(f"Received: {received_data.decode().strip()}")
-
-    # Close the socket
-    client_socket.close()
-
-# Ask for input from the user
-user_input = input("Please enter employee data (format as '####|First Surname'): ")
-
-# Specify the header (CLOCK or JOB, for example)
-header = "CLOCK"  # Change this based on what you're testing
-
-# Send data to the server
-send_data_to_server(user_input, header)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect((server_ip, 8000))
+        client_socket.sendall(full_data.encode())
+        response = client_socket.recv(1024).decode().strip()
+        print(response)
