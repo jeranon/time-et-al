@@ -72,4 +72,6 @@ def run_clock_in_out():
                 message = message.replace("Clocked out", LIGHT_PURPLE + "Clocked out" + LIGHT_GREEN)
 
 if __name__ == "__main__":
-    run_clock_in_out()
+    os.system('')
+    print(LIGHT_RED + "ERROR: This script cannot be run directly. Please run through main_loader.py. Press Enter to exit..." + RESET_COLOR)
+    input("")
