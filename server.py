@@ -163,19 +163,19 @@ def handle_clock_in_out(data, client_address):
         if employee_info[employee_id] == employee_name:
             if employee_states[employee_id]['state'] == 0:
                 employee_states[employee_id]['state'] = 1
-                message = f"Employee {employee_name} is now clocked in."
+                message = f"SUCCESS: Clocked in employee: {employee_name}."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
             else:
                 employee_states[employee_id]['state'] = 0
-                message = f"Employee {employee_name} is now clocked out."
+                message = f"SUCCESS: Clocked out employee: {employee_name}."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
         else:
-            message = "Employee ID and name mismatch. Check your input."
+            message = "ERROR: Employee ID and name mismatch. Check your input."
             log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
     else:
         employee_states[employee_id] = {"state": 1, "last_scan": current_timestamp}
         employee_info[employee_id] = employee_name
-        message = f"New employee {employee_name} with ID {employee_id} created."
+        message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
         log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
 
     # Update the last scan time for the employee
