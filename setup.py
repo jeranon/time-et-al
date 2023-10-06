@@ -12,7 +12,7 @@ directories = [
 files_with_initial_data = {
     "data/config/config.json": {
         "pay_period": {
-            "start_date": "2023-01-01",
+            "start_date": "2023-10-01",
             "duration_days": 14
         },
         "work_day": {
