@@ -151,32 +151,42 @@ def save_employee_states():
 
 def handle_clock_in_out(data, client_address):
     employee_id, employee_name = data.split("|")[:2]
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Check if the employee has a saved state and it's from a previous day
+    if employee_id in employee_states and employee_states[employee_id]['last_scan'].split()[0] != current_date:
+        employee_states[employee_id]['state'] = 0  # Reset the state to clocked-out
+
+    # The rest of the existing logic follows...
     if employee_id in employee_states:
         if employee_info[employee_id] == employee_name:
-            if employee_states[employee_id] == 0:
-                employee_states[employee_id] = 1
+            if employee_states[employee_id]['state'] == 0:
+                employee_states[employee_id]['state'] = 1
                 message = f"Employee {employee_name} is now clocked in."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
             else:
-                employee_states[employee_id] = 0
+                employee_states[employee_id]['state'] = 0
                 message = f"Employee {employee_name} is now clocked out."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
         else:
             message = "Employee ID and name mismatch. Check your input."
             log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
     else:
-        employee_states[employee_id] = 1
+        employee_states[employee_id] = {"state": 1, "last_scan": current_timestamp}
         employee_info[employee_id] = employee_name
         message = f"New employee {employee_name} with ID {employee_id} created."
         log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
 
+    # Update the last scan time for the employee
+    employee_states[employee_id]['last_scan'] = current_timestamp
+
     client_info = {
-        "ip": client_address[0],  # This captures the client's IP from the provided client_address
-        "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"  # This captures the machine name if provided
+        "ip": client_address[0],
+        "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"
     }
     
-    write_time_data(employee_id, employee_name, employee_states[employee_id], client_info)
+    write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
     update_employee_data(employee_id, employee_name)
     update_client_data(client_info)
     save_employee_states()

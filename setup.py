@@ -27,6 +27,12 @@ files_with_initial_data = {
     "data/reference/transaction_counter.txt": "0"
 }
 
+# Check if employee_states.json exists; if not, create it with the new structure
+employee_states_path = "data/reference/employee_states.json"
+if not os.path.exists(employee_states_path):
+    with open(employee_states_path, "w") as file:
+        json.dump({}, file)
+
 for directory in directories:
     if not os.path.exists(directory):
         os.makedirs(directory)
