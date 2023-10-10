@@ -1,5 +1,6 @@
 import os
 from clock_in_out import run_clock_in_out
+from job_tracking import run_job_tracking   # Import the function
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -31,8 +32,7 @@ def main():
         if choice == "1":
             message = run_clock_in_out()
         elif choice == "2":
-            # TODO: Implement job tracking here
-            message = LIGHT_RED + "ERROR: Job Tracking not yet implemented." + RESET_COLOR
+            message = run_job_tracking()   # Call the function here
         elif choice == "3":
             break
         else:

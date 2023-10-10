@@ -209,9 +209,26 @@ def update_client_data(client_info):
         with open("data/reference/clients.json", "w") as file:
             json.dump(clients, file, indent=4)
 
-def handle_job_tracking(data, client_socket):
-    # Placeholder for your job tracking logic
-    pass
+def handle_check_employee_request(data):
+    """
+    Check if the provided employee ID is valid and if the employee is clocked in.
+    """
+    employee_id, employee_name = data.split('|')
+    
+    if employee_id not in employee_info or employee_info[employee_id] != employee_name:
+        return "ERROR: Invalid Employee ID or Name mismatch."
+    if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
+        return "ERROR: Employee not clocked in."
+    return "SUCCESS: Employee ID valid and clocked in."
+
+def handle_process_request(employee_id, employee_name, job_num):
+    """
+    Handle the job number processing for the given employee ID.
+    """
+    # Here, we'll add the logic to save the job number for the employee ID. 
+    response = f"SUCCESS: {employee_name} scanned onto job #: {job_num}"
+    print(f"Sending response: {response}")  # Debug line
+    return response
 
 update_server_ip()
 initialize_employee_data()
@@ -222,11 +239,24 @@ try:
         print(f"Accepted connection from {client_address}")
 
         data = client_socket.recv(1024).decode().strip()
+        print(f"Received from client: {data}") #debugging line
 
         if data.startswith("CLOCK:"):
             handle_clock_in_out(data[6:], client_address)  # Pass everything after "CLOCK:"
-        elif data.startswith("JOB:"):
-            handle_job_tracking(data[4:], client_socket)  # Pass everything after "JOB:"
+        elif data.startswith("JOB:CHECK_EMPLOYEE:"):
+            response = handle_check_employee_request(data.split(":")[2])
+            client_socket.sendall(response.encode())
+            print(f"Sending to client: {response}") #debugging line
+        elif data.startswith("JOB:PROCESS:"):
+            components = data.split(":")[2].split("|")
+            if len(components) != 3:
+                print("ERROR: Incorrect format received from client.")
+                continue
+
+            emp_id, employee_name, job_num = components
+            response = handle_process_request(emp_id, employee_name, job_num)
+            client_socket.sendall(response.encode())
+            print(f"Sending to client: {response}\n") #debugging line
 
         client_socket.close()
 except KeyboardInterrupt:
@@ -234,3 +264,4 @@ except KeyboardInterrupt:
     server_socket.close()
     
     print("Server shut down. Goodbye!")
+
