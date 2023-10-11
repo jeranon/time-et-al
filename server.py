@@ -1,6 +1,7 @@
 import socket
 import os
 import json
+import select
 from datetime import datetime, timedelta
 
 # Function to get the server's IP address
@@ -77,7 +78,7 @@ def initialize_employee_data():
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(('0.0.0.0', 8000))
 server_socket.listen(5)
-print("Listening on 0.0.0.0:8000")
+server_socket.setblocking(0)
 
 TRANSACTION_COUNTER_FILE = "data/reference/transaction_counter.txt"
 
@@ -216,55 +217,65 @@ def handle_check_employee_request(data):
     employee_id, employee_name = data.split('|')
     
     if employee_id not in employee_info or employee_info[employee_id] != employee_name:
+        log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Invalid ID or Name mismatch.")
         return "ERROR: Invalid Employee ID or Name mismatch."
     if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
+        log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Employee not clocked in.")
         return "ERROR: Employee not clocked in."
+    log_event("JOB_TRACKING", f"Successful check for {employee_name} ({employee_id}): Employee is clocked in.")
     return f"SUCCESS: {employee_name} is clocked in. Please proceed below."
 
 def handle_process_request(employee_id, employee_name, job_num):
     """
     Handle the job number processing for the given employee ID.
     """
-    # Here, we'll add the logic to save the job number for the employee ID. 
     response = f"SUCCESS: {employee_name} scanned onto job #: {job_num}"
-    print(f"Sending response: {response}")  # Debug line
+    log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
     return response
 
 update_server_ip()
 initialize_employee_data()
 
+server_socket.settimeout(1) # 1 second timeout
+
+print("Listening on 0.0.0.0:8000")
+inputs = [server_socket]
 while True:
     try:
-        client_socket, client_address = server_socket.accept()
-        print(f"Accepted connection from {client_address}")
+        readable, _, _ = select.select(inputs, [], [], 1)  # 1 second timeout for select
+        for s in readable:
+            if s is server_socket:
+                client_socket, client_address = s.accept()
+                print(f"Accepted connection from {client_address}")
 
-        data = client_socket.recv(1024).decode().strip()
-        print(f"Received from client: {data}") #debugging line
+                data = client_socket.recv(1024).decode().strip()
+                print(f"Received from client: {data}")  # debugging line
 
-        if data.startswith("CLOCK:"):
-            handle_clock_in_out(data[6:], client_address)  # Pass everything after "CLOCK:"
-        elif data.startswith("JOB:CHECK_EMPLOYEE:"):
-            response = handle_check_employee_request(data.split(":")[2])
-            client_socket.sendall(response.encode())
-            print(f"Sending to client: {response}") #debugging line
-        elif data.startswith("JOB:PROCESS:"):
-            components = data.split(":")[2].split("|")
-            if len(components) != 3:
-                print("ERROR: Incorrect format received from client.")
-                continue
+                if data.startswith("CLOCK:"):
+                    handle_clock_in_out(data[6:], client_address)  # Pass everything after "CLOCK:"
+                elif data.startswith("JOB:CHECK_EMPLOYEE:"):
+                    response = handle_check_employee_request(data.split(":")[2])
+                    log_event("JOB_TRACKING", f"Checked employee status for job tracking: {response}")
+                    client_socket.sendall(response.encode())
+                    print(f"Sending to client: {response}")  # debugging line
+                elif data.startswith("JOB:PROCESS:"):
+                    components = data.split(":")[2].split("|")
+                    if len(components) != 3:
+                        print("ERROR: Incorrect format received from client.")
+                        log_event("ERROR", "Incorrect format received from client for job processing.")
+                        continue
+                    emp_id, employee_name, job_num = components
+                    response = handle_process_request(emp_id, employee_name, job_num)
+                    log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
+                    client_socket.sendall(response.encode())
+                    print(f"Sending to client: {response}\n")  # debugging line
+                client_socket.close()
 
-            emp_id, employee_name, job_num = components
-            response = handle_process_request(emp_id, employee_name, job_num)
-            client_socket.sendall(response.encode())
-            print(f"Sending to client: {response}\n") #debugging line
-
-        client_socket.close()
-    except Exception as e:
-        log_event("ERROR", f"An error occurred: {str(e)}")
-        client_socket.close() # Close the client socket if it's still open
-        continue # Continue processing other requests
     except KeyboardInterrupt:
         print("\nGracefully shutting down the server...")
         server_socket.close()
         print("Server shut down. Goodbye!")
         break
+    except Exception as e:
+        log_event("ERROR", f"An error occurred: {str(e)}")
+        client_socket.close()  # Close the client socket if it's still open
