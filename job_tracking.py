@@ -41,27 +41,31 @@ def run_job_tracking():
             message = LIGHT_GREEN + response + RESET_COLOR
             display_message_and_prompt(message, "Please scan the job number or type 'exit' to quit: ")
             job_number_scan = input()
-            
-            while job_number_scan == employee_id_scan or "|" in job_number_scan:
-                message = LIGHT_RED + "ERROR: Invalid job number scan. Please try again." + RESET_COLOR
-                display_message_and_prompt(message, "Please scan the job number or type 'exit' to quit: ")
-                job_number_scan = input()
-            
-            # Allow the ability to exit from the job number scan
-            if job_number_scan == "exit":
-                message = ""
-                prompt = "Please scan your employee ID or type 'exit' to quit: "
-                continue
-
-            # Send the job number to the server for processing
-            response = send_data_to_server(f"JOB:PROCESS:{employee_id_scan}|{job_number_scan}")
-            if "SUCCESS" in response:
-                message = LIGHT_GREEN + response + RESET_COLOR
-            else:
-                message = LIGHT_RED + response + RESET_COLOR
-            
-            # Reset for the next employee
+        else:
+            message = LIGHT_RED + response + RESET_COLOR
+            continue
+        
+        # This block is now outside of the else clause
+        while job_number_scan == employee_id_scan or "|" in job_number_scan:
+            message = LIGHT_RED + "ERROR: Invalid job number scan. Please try again." + RESET_COLOR
+            display_message_and_prompt(message, "Please scan the job number or type 'exit' to quit: ")
+            job_number_scan = input()
+        
+        # Allow the ability to exit from the job number scan
+        if job_number_scan == "exit":
+            message = ""
             prompt = "Please scan your employee ID or type 'exit' to quit: "
+            continue
+
+        # Send the job number to the server for processing
+        response = send_data_to_server(f"JOB:PROCESS:{employee_id_scan}|{job_number_scan}")
+        if "SUCCESS" in response:
+            message = LIGHT_GREEN + response + RESET_COLOR
+        else:
+            message = LIGHT_RED + response + RESET_COLOR
+        
+        # Reset for the next employee
+        prompt = "Please scan your employee ID or type 'exit' to quit: "
 
 def get_server_ip():
     """
