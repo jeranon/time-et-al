@@ -219,7 +219,7 @@ def handle_check_employee_request(data):
         return "ERROR: Invalid Employee ID or Name mismatch."
     if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
         return "ERROR: Employee not clocked in."
-    return "SUCCESS: Employee ID valid and clocked in."
+    return f"SUCCESS: {employee_name} is clocked in. Please proceed below."
 
 def handle_process_request(employee_id, employee_name, job_num):
     """
@@ -233,8 +233,8 @@ def handle_process_request(employee_id, employee_name, job_num):
 update_server_ip()
 initialize_employee_data()
 
-try:
-    while True:
+while True:
+    try:
         client_socket, client_address = server_socket.accept()
         print(f"Accepted connection from {client_address}")
 
@@ -259,9 +259,12 @@ try:
             print(f"Sending to client: {response}\n") #debugging line
 
         client_socket.close()
-except KeyboardInterrupt:
-    print("\nGracefully shutting down the server...")
-    server_socket.close()
-    
-    print("Server shut down. Goodbye!")
-
+    except Exception as e:
+        log_event("ERROR", f"An error occurred: {str(e)}")
+        client_socket.close() # Close the client socket if it's still open
+        continue # Continue processing other requests
+    except KeyboardInterrupt:
+        print("\nGracefully shutting down the server...")
+        server_socket.close()
+        print("Server shut down. Goodbye!")
+        break
