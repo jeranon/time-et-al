@@ -167,6 +167,9 @@ def handle_clock_in_out(data, client_address):
                 message = f"SUCCESS: Clocked in employee: {employee_name}."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
             else:
+                # Before we set the state to 0 (clocking out), we need to ensure the job tracking for the last job is complete
+                write_job_tracking_data(employee_id, None)
+                
                 employee_states[employee_id]['state'] = 0
                 message = f"SUCCESS: Clocked out employee: {employee_name}."
                 log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
@@ -229,9 +232,47 @@ def handle_process_request(employee_id, employee_name, job_num):
     """
     Handle the job number processing for the given employee ID.
     """
+    write_job_tracking_data(employee_id, job_num)
     response = f"SUCCESS: {employee_name} scanned onto job #: {job_num}"
     log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
     return response
+    
+def write_job_tracking_data(employee_id, job_num):
+    start_date, _ = get_current_pay_period()
+    year = datetime.now().year
+    file_path = f"data/job_scans/{year}/{start_date}.json"
+    
+    # Ensure directory exists before writing the file
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    current_data = {}
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            current_data = json.load(file)
+    
+    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if employee_id not in current_data:
+        current_data[employee_id] = []
+    
+    # Check if the employee is already assigned to a job
+    if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
+        current_data[employee_id][-1]['job_end'] = current_timestamp
+        start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
+        end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
+        duration = (end_time - start_time).total_seconds()
+        current_data[employee_id][-1]['total_time'] = duration
+    
+    # Add the new job scan
+    current_data[employee_id].append({
+        "job_start": current_timestamp,
+        "job_num": job_num
+    })
+
+    with open(file_path, 'w') as file:
+        json.dump(current_data, file, indent=4)
 
 update_server_ip()
 initialize_employee_data()
