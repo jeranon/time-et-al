@@ -123,6 +123,10 @@ def log_event(event_type, message):
     with open(log_path, 'a') as log_file:
         log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
 
+def save_employee_states():
+    with open(os.path.join(config["paths"]["reference_dir"], "employee_states.json"), "w") as file:
+        json.dump(employee_states, file, indent=4)
+
 def write_time_data(employee_id, employee_name, clock_status, client_info):
     start_date, _ = get_current_pay_period()
     year = datetime.now().year
@@ -153,56 +157,62 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-def save_employee_states():
-    with open(os.path.join(config["paths"]["reference_dir"], "employee_states.json"), "w") as file:
-        json.dump(employee_states, file, indent=4)
-
 def handle_clock_in_out(data, client_address):
-    employee_id, employee_name = data.split("|")[:2]
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        print("Processing clock in/out request...")  # Debugging line
+        employee_id, employee_name = data.split("|")[:2]
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Check if the employee has a saved state and it's from a previous day
-    if employee_id in employee_states and employee_states[employee_id]['last_scan'].split()[0] != current_date:
-        employee_states[employee_id]['state'] = 0  # Reset the state to clocked-out
+        # Check if the employee has a saved state and it's from a previous day
+        if employee_id in employee_states and employee_states[employee_id]['last_scan'].split()[0] != current_date:
+            employee_states[employee_id]['state'] = 0  # Reset the state to clocked-out
 
-    # The rest of the existing logic follows...
-    if employee_id in employee_states:
-        if employee_info[employee_id] == employee_name:
-            if employee_states[employee_id]['state'] == 0:
-                employee_states[employee_id]['state'] = 1
-                message = f"SUCCESS: Clocked in employee: {employee_name}."
-                log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
+        # The rest of the existing logic follows...
+        if employee_id in employee_states:
+            if employee_info[employee_id] == employee_name:
+                if employee_states[employee_id]['state'] == 0:
+                    employee_states[employee_id]['state'] = 1
+                    message = f"SUCCESS: Clocked in employee: {employee_name}."
+                    log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
+                else:
+                    # Before we set the state to 0 (clocking out), 
+                    # we need to ensure the job tracking for the last job is complete
+                    write_job_tracking_data(employee_id, None)
+                    
+                    employee_states[employee_id]['state'] = 0
+                    message = f"SUCCESS: Clocked out employee: {employee_name}."
+                    log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
             else:
-                # Before we set the state to 0 (clocking out), we need to ensure the job tracking for the last job is complete
-                write_job_tracking_data(employee_id, None)
-                
-                employee_states[employee_id]['state'] = 0
-                message = f"SUCCESS: Clocked out employee: {employee_name}."
-                log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
+                message = "ERROR: Employee ID and name mismatch. Check your input."
+                log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
         else:
-            message = "ERROR: Employee ID and name mismatch. Check your input."
-            log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
-    else:
-        employee_states[employee_id] = {"state": 1, "last_scan": current_timestamp}
-        employee_info[employee_id] = employee_name
-        message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
-        log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
+            employee_states[employee_id] = {"state": 1, "last_scan": current_timestamp}
+            employee_info[employee_id] = employee_name
+            message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
+            log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
 
-    # Update the last scan time for the employee
-    employee_states[employee_id]['last_scan'] = current_timestamp
+        # Update the last scan time for the employee
+        employee_states[employee_id]['last_scan'] = current_timestamp
 
-    client_info = {
-        "ip": client_address[0],
-        "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"
-    }
-    
-    write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
-    update_employee_data(employee_id, employee_name)
-    update_client_data(client_info)
-    save_employee_states()
+        client_info = {
+            "ip": client_address[0],
+            "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"
+        }
+        
+        write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
+        update_employee_data(employee_id, employee_name)
+        update_client_data(client_info)
+        save_employee_states()
 
-    client_socket.sendall(f"{message}\n".encode())
+        print(f"Sending to client: {message}")  # Debugging line
+        client_socket.sendall(f"{message}\n".encode())
+
+    except Exception as e:
+        error_message = f"ERROR: Failed to process request due to: {str(e)}"
+        print(error_message)  # Debugging line
+        log_event("ERROR", error_message)
+        client_socket.sendall(f"{error_message}\n".encode())
 
 def update_employee_data(employee_id, employee_name):
     employees_path = os.path.join(config["paths"]["reference_dir"], "employees.json")
@@ -252,7 +262,7 @@ def write_job_tracking_data(employee_id, job_num):
     current_day = datetime.now().strftime("%Y-%m-%d")
     
     # Using os.path.join() to create the full path
-    file_path = os.path.join(config["paths"]["job_tracking_dir"], str(year), start_date, f"{current_day}.json")
+    file_path = os.path.join(config["paths"]["job_scans_dir"], str(year), start_date, f"{current_day}.json")
 
     # Ensure directory exists before writing the file
     directory = os.path.dirname(file_path)
