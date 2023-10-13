@@ -6,17 +6,26 @@ directories = [
     "data/config",
     "data/logs",
     "data/reference",
-    "data/time_scans"
+    "data/time_scans",
+    "data/job_scans"
 ]
 
 files_with_initial_data = {
     "data/config/config.json": {
+        "paths": {
+            "base_dir": "data",
+            "reference_dir": "data/reference",
+            "logs_dir": "data/logs",
+            "time_scans_dir": "data/time_scans",
+            "job_scans_dir": "data/job_scans"
+        },
         "pay_period": {
-            "start_date": "2023-10-01",
+            "start_date": "2023-09-17",
             "duration_days": 14
         },
         "work_day": {
-            "start_hour": 8
+            "start_hour": 5,
+            "end_hour": 4
         }
     },
     "data/reference/server_ip.json": {
