@@ -18,20 +18,21 @@ def get_config_data():
     with open("data/config/config.json", "r") as file:
         config_data = json.load(file)
     return config_data
+    
+config = get_config_data()
 
 # Update the server IP in server_ip.json if it has changed
 def update_server_ip():
     current_ip = get_server_ip()
-    with open("data/reference/server_ip.json", "r") as file:
+    with open(os.path.join(config["paths"]["reference_dir"], "server_ip.json"), "r") as file:
         stored_ip_data = json.load(file)
     if stored_ip_data["ip"] != current_ip:
         stored_ip_data["ip"] = current_ip
-        with open("data/reference/server_ip.json", "w") as file:
+        with open(os.path.join(config["paths"]["reference_dir"], "server_ip.json"), "w") as file:
             json.dump(stored_ip_data, file, indent=4)
 
 # Fetch the current pay period based on the start date and duration
 def get_current_pay_period():
-    config = get_config_data()
     start_date = datetime.strptime(config["pay_period"]["start_date"], "%Y-%m-%d")
     duration = timedelta(days=config["pay_period"]["duration_days"])
     end_date = start_date + duration
@@ -57,16 +58,22 @@ employee_info = {}
 def initialize_employee_data():
     global employee_states, employee_info
 
+    # Define the path for employees.json using the config variable
+    employees_path = os.path.join(config["paths"]["reference_dir"], "employees.json")
+
     # If the employees.json file doesn't exist, we don't do anything.
-    if not os.path.exists("data/reference/employees.json"):
+    if not os.path.exists(employees_path):
         return
 
-    with open("data/reference/employees.json", "r") as file:
+    with open(employees_path, "r") as file:
         employee_data = json.load(file)
 
+    # Define the path for employee_states.json using the config variable
+    employee_states_path = os.path.join(config["paths"]["reference_dir"], "employee_states.json")
+
     # Load employee states if the file exists
-    if os.path.exists("data/reference/employee_states.json"):
-        with open("data/reference/employee_states.json", "r") as state_file:
+    if os.path.exists(employee_states_path):
+        with open(employee_states_path, "r") as state_file:
             saved_states = json.load(state_file)
         for emp_id, state in saved_states.items():
             employee_states[emp_id] = state
@@ -80,7 +87,7 @@ server_socket.bind(('0.0.0.0', 8000))
 server_socket.listen(5)
 server_socket.setblocking(0)
 
-TRANSACTION_COUNTER_FILE = "data/reference/transaction_counter.txt"
+TRANSACTION_COUNTER_FILE = os.path.join(config["paths"]["reference_dir"], "transaction_counter.txt")
 
 def get_transaction_counter():
     """Fetch the current transaction counter. If file doesn't exist, initialize it."""
@@ -107,7 +114,7 @@ def log_event(event_type, message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_year = datetime.now().year
     start_date, _ = get_current_pay_period()
-    log_path = f"data/logs/{current_year}/{start_date}/{datetime.now().strftime('%Y-%m-%d')}.log"
+    log_path = os.path.join(config["paths"]["logs_dir"], str(current_year), start_date, f"{datetime.now().strftime('%Y-%m-%d')}.log")
     
     # Ensure directory exists
     if not os.path.exists(os.path.dirname(log_path)):
@@ -119,8 +126,8 @@ def log_event(event_type, message):
 def write_time_data(employee_id, employee_name, clock_status, client_info):
     start_date, _ = get_current_pay_period()
     year = datetime.now().year
-    file_path = f"data/time_scans/{year}/{start_date}.json"
-    
+    file_path = os.path.join(config["paths"]["time_scans_dir"], str(year), f"{start_date}.json")
+
     # Ensure directory exists before writing the file
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
@@ -147,7 +154,7 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
         json.dump(data, file, indent=4)
 
 def save_employee_states():
-    with open("data/reference/employee_states.json", "w") as file:
+    with open(os.path.join(config["paths"]["reference_dir"], "employee_states.json"), "w") as file:
         json.dump(employee_states, file, indent=4)
 
 def handle_clock_in_out(data, client_address):
@@ -198,19 +205,21 @@ def handle_clock_in_out(data, client_address):
     client_socket.sendall(f"{message}\n".encode())
 
 def update_employee_data(employee_id, employee_name):
-    with open("data/reference/employees.json", "r") as file:
+    employees_path = os.path.join(config["paths"]["reference_dir"], "employees.json")
+    with open(employees_path, "r") as file:
         employees = json.load(file)
     if employee_id not in employees:
         employees[employee_id] = employee_name
-        with open("data/reference/employees.json", "w") as file:
+        with open(employees_path, "w") as file:
             json.dump(employees, file, indent=4)
 
 def update_client_data(client_info):
-    with open("data/reference/clients.json", "r") as file:
+    clients_path = os.path.join(config["paths"]["reference_dir"], "clients.json")
+    with open(clients_path, "r") as file:
         clients = json.load(file)
     if client_info["ip"] not in [client["ip"] for client in clients]:
         clients.append(client_info)
-        with open("data/reference/clients.json", "w") as file:
+        with open(clients_path, "w") as file:
             json.dump(clients, file, indent=4)
 
 def handle_check_employee_request(data):
@@ -240,8 +249,11 @@ def handle_process_request(employee_id, employee_name, job_num):
 def write_job_tracking_data(employee_id, job_num):
     start_date, _ = get_current_pay_period()
     year = datetime.now().year
-    file_path = f"data/job_scans/{year}/{start_date}.json"
+    current_day = datetime.now().strftime("%Y-%m-%d")
     
+    # Using os.path.join() to create the full path
+    file_path = os.path.join(config["paths"]["job_tracking_dir"], str(year), start_date, f"{current_day}.json")
+
     # Ensure directory exists before writing the file
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
