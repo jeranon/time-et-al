@@ -70,7 +70,10 @@ def initialize_employee_data():
 
     for emp_id, attributes in employee_data.items():
         employee_info[emp_id] = attributes["name"]
-        employee_states[emp_id] = attributes
+        employee_states[emp_id] = {
+            "state": attributes["state"],
+            "last_scan": attributes["last_scan"]
+        }
 
 # Initialize the server socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -115,8 +118,16 @@ def log_event(event_type, message):
         log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
 
 def save_employee_states():
+    combined_data = {}
+    for emp_id in employee_info:
+        combined_data[emp_id] = {
+            "name": employee_info[emp_id],
+            "state": employee_states[emp_id]["state"] if emp_id in employee_states else 0,
+            "last_scan": employee_states[emp_id]["last_scan"] if emp_id in employee_states else "",
+            "shift": "day"  # Default value, modify as needed
+        }
     with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "w") as file:
-        json.dump(employee_states, file, indent=4)
+        json.dump(combined_data, file, indent=4)
 
 def write_time_data(employee_id, employee_name, clock_status, client_info):
     start_date, _ = get_current_pay_period()
@@ -148,7 +159,7 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-def handle_clock_in_out(data, client_address):
+def handle_clock_in_out(data, client_address, client_socket):
     try:
         print("Processing clock in/out request...")
         employee_id, employee_name = data.split("|")[:2]
@@ -177,19 +188,18 @@ def handle_clock_in_out(data, client_address):
                 message = "ERROR: Employee ID and name mismatch. Check your input."
                 log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
         else:
-            employee_states[employee_id] = {"state": 1, "last_scan": current_timestamp}
-            employee_info[employee_id] = employee_name
+            employee_states[employee_id] = {
+                "name": employee_name,
+                "state": 1,
+                "last_scan": current_timestamp,
+                "shift": "day"
+            }
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
             log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
             
-            # Update employees.json immediately after detecting new employee ID
-            update_employee_data(employee_id, employee_name)
-
-        # Move the save_employee_states function here to ensure it's saved after all updates
-        save_employee_states()
-
         # Update the last scan time for the employee
         employee_states[employee_id]['last_scan'] = current_timestamp
+        save_employee_states()
 
         client_info = {
             "ip": client_address[0],
@@ -219,6 +229,10 @@ def update_employee_data(employee_id, employee_name):
             "last_scan": "",
             "shift": "day"  # or whatever default you want
         }
+    else:
+        employees[employee_id]["name"] = employee_name
+        employees[employee_id]["state"] = employee_states[employee_id]["state"]
+        employees[employee_id]["last_scan"] = employee_states[employee_id]["last_scan"]
     with open(employees_path, "w") as file:
         json.dump(employees, file, indent=4)
 
@@ -314,7 +328,7 @@ while True:
                 print(f"Received from client: {data}")  # debugging line
 
                 if data.startswith("CLOCK:"):
-                    handle_clock_in_out(data[6:], client_address)  # Pass everything after "CLOCK:"
+                    handle_clock_in_out(data[6:], client_address, client_socket)  # Pass everything after "CLOCK:"
                 elif data.startswith("JOB:CHECK_EMPLOYEE:"):
                     response = handle_check_employee_request(data.split(":")[2])
                     log_event("JOB_TRACKING", f"Checked employee status for job tracking: {response}")
