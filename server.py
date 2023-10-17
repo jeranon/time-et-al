@@ -196,6 +196,9 @@ def handle_clock_in_out(data, client_address, client_socket):
                 "last_scan": current_timestamp,
                 "shift": "day"
             }
+            
+            employee_info[employee_id] = employee_name
+            
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
             save_employee_states()
             log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
