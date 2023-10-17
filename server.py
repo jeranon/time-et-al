@@ -175,6 +175,7 @@ def handle_clock_in_out(data, client_address, client_socket):
                 if employee_states[employee_id]['state'] == 0:
                     employee_states[employee_id]['state'] = 1
                     message = f"SUCCESS: Clocked in employee: {employee_name}."
+                    save_employee_states()
                     log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
                 else:
                     # Before we set the state to 0 (clocking out), 
@@ -183,6 +184,7 @@ def handle_clock_in_out(data, client_address, client_socket):
                     
                     employee_states[employee_id]['state'] = 0
                     message = f"SUCCESS: Clocked out employee: {employee_name}."
+                    save_employee_states()
                     log_event("TRANSACTION", f"Employee {employee_name} clocked out.")
             else:
                 message = "ERROR: Employee ID and name mismatch. Check your input."
@@ -195,6 +197,7 @@ def handle_clock_in_out(data, client_address, client_socket):
                 "shift": "day"
             }
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
+            save_employee_states()
             log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
             
         # Update the last scan time for the employee
@@ -207,6 +210,7 @@ def handle_clock_in_out(data, client_address, client_socket):
         }
         
         write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
+        save_employee_states()
         update_client_data(client_info)
 
         print(f"Sending to client: {message}")  # Debugging line
