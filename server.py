@@ -68,18 +68,9 @@ def initialize_employee_data():
     with open(employees_path, "r") as file:
         employee_data = json.load(file)
 
-    # Define the path for employee_states.json using the config variable
-    employee_states_path = os.path.join(config["paths"]["reference_dir"], "employee_states.json")
-
-    # Load employee states if the file exists
-    if os.path.exists(employee_states_path):
-        with open(employee_states_path, "r") as state_file:
-            saved_states = json.load(state_file)
-        for emp_id, state in saved_states.items():
-            employee_states[emp_id] = state
-
-    for emp_id, emp_name in employee_data.items():
-        employee_info[emp_id] = emp_name
+    for emp_id, attributes in employee_data.items():
+        employee_info[emp_id] = attributes["name"]
+        employee_states[emp_id] = attributes
 
 # Initialize the server socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -124,7 +115,7 @@ def log_event(event_type, message):
         log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
 
 def save_employee_states():
-    with open(os.path.join(config["paths"]["reference_dir"], "employee_states.json"), "w") as file:
+    with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "w") as file:
         json.dump(employee_states, file, indent=4)
 
 def write_time_data(employee_id, employee_name, clock_status, client_info):
@@ -159,7 +150,7 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
 
 def handle_clock_in_out(data, client_address):
     try:
-        print("Processing clock in/out request...")  # Debugging line
+        print("Processing clock in/out request...")
         employee_id, employee_name = data.split("|")[:2]
         current_date = datetime.now().strftime("%Y-%m-%d")
         current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -168,7 +159,6 @@ def handle_clock_in_out(data, client_address):
         if employee_id in employee_states and employee_states[employee_id]['last_scan'].split()[0] != current_date:
             employee_states[employee_id]['state'] = 0  # Reset the state to clocked-out
 
-        # The rest of the existing logic follows...
         if employee_id in employee_states:
             if employee_info[employee_id] == employee_name:
                 if employee_states[employee_id]['state'] == 0:
@@ -219,9 +209,14 @@ def update_employee_data(employee_id, employee_name):
     with open(employees_path, "r") as file:
         employees = json.load(file)
     if employee_id not in employees:
-        employees[employee_id] = employee_name
-        with open(employees_path, "w") as file:
-            json.dump(employees, file, indent=4)
+        employees[employee_id] = {
+            "name": employee_name,
+            "state": 0,
+            "last_scan": "",
+            "shift": "day"  # or whatever default you want
+        }
+    with open(employees_path, "w") as file:
+        json.dump(employees, file, indent=4)
 
 def update_client_data(client_info):
     clients_path = os.path.join(config["paths"]["reference_dir"], "clients.json")
