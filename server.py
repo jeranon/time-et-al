@@ -190,18 +190,11 @@ def handle_clock_in_out(data, client_address, client_socket):
                 message = "ERROR: Employee ID and name mismatch. Check your input."
                 log_event("ERROR", f"Failed to process data for employee {employee_name}. Name/ID Mismatch.")
         else:
-            employee_states[employee_id] = {
-                "name": employee_name,
-                "state": 1,
-                "last_scan": current_timestamp,
-                "shift": "day"
-            }
-            
-            employee_info[employee_id] = employee_name
-            
-            message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
-            save_employee_states()
-            log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
+            message = f"ERROR: Employee ID {employee_id} not recognized. Please onboard the employee first."
+            log_event("ERROR", message)
+            print(f"Sending to client: {message}") # Debugging line
+            client_socket.sendall(f"{message}\n".encode())
+            return
             
         # Update the last scan time for the employee
         employee_states[employee_id]['last_scan'] = current_timestamp
@@ -275,7 +268,40 @@ def handle_process_request(employee_id, employee_name, job_num):
     response = f"SUCCESS: {employee_name} scanned onto job #: {job_num}"
     log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
     return response
-    
+
+def handle_onboarding_request(data):
+    """
+    Handle the onboarding request to add a new employee.
+    """
+    try:
+        # Extract data from the received string
+        employee_id, employee_name, shift = data.split("|")
+        
+        # Check if the employee already exists
+        if employee_id in employee_info:
+            message = f"ERROR: Employee ID {employee_id} already exists."
+            log_event("ONBOARDING", message)
+        else:
+            # Add employee to the data structures
+            employee_info[employee_id] = employee_name
+            employee_states[employee_id] = {
+                "name": employee_name,
+                "state": 0, # Initial state: Clocked-out
+                "last_scan": "",
+                "shift": shift
+            }
+            
+            # Save the changes
+            save_employee_states()
+            message = f"SUCCESS: New employee {employee_name} with ID {employee_id} onboarded."
+            log_event("ONBOARDING", message)
+            
+        return message
+    except Exception as e:
+        error_message = f"ERROR: Failed to onboard employee due to: {str(e)}"
+        log_event("ERROR", error_message)
+        return error_message
+
 def write_job_tracking_data(employee_id, job_num):
     start_date, _ = get_current_pay_period()
     year = datetime.now().year
@@ -352,6 +378,10 @@ while True:
                     log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
                     client_socket.sendall(response.encode())
                     print(f"Sending to client: {response}\n")  # debugging line
+                elif data.startswith("ONBOARD:"):
+                    response = handle_onboarding_request(data[8:])
+                    client_socket.sendall(response.encode())
+                    print(f"Sending to client: {response}") # debugging line
                 client_socket.close()
 
     except KeyboardInterrupt:
