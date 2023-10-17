@@ -181,6 +181,12 @@ def handle_clock_in_out(data, client_address):
             employee_info[employee_id] = employee_name
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} created and clocked in."
             log_event("TRANSACTION", f"Employee {employee_name} with ID {employee_id} created and clocked-in.")
+            
+            # Update employees.json immediately after detecting new employee ID
+            update_employee_data(employee_id, employee_name)
+
+        # Move the save_employee_states function here to ensure it's saved after all updates
+        save_employee_states()
 
         # Update the last scan time for the employee
         employee_states[employee_id]['last_scan'] = current_timestamp
@@ -191,9 +197,7 @@ def handle_clock_in_out(data, client_address):
         }
         
         write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
-        update_employee_data(employee_id, employee_name)
         update_client_data(client_info)
-        save_employee_states()
 
         print(f"Sending to client: {message}")  # Debugging line
         client_socket.sendall(f"{message}\n".encode())
