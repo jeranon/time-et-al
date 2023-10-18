@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 
 directories = [
     "data",
@@ -49,5 +50,11 @@ for file_path, initial_data in files_with_initial_data.items():
             else:
                 file.write(initial_data)
         print(f"Created file: {file_path} with initial data")
+        
+# Check and install required packages
+with open("requirements.txt", "r") as reqs:
+    packages = reqs.readlines()
+    for package in packages:
+        subprocess.call(["pip", "install", package.strip()])
 
 print("Setup completed. Required directories and files have been created.")
