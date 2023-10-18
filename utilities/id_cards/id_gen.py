@@ -51,12 +51,12 @@ font = ImageFont.truetype("arial.ttf", font_size)  # Replace "arial.ttf" with th
 text = f"{user_name}"
 
 # Dynamically adjust the font size to fit the available width
-while font.getsize(text)[0] > text_max_width:
+while font.getlength(text) > text_max_width:
     font_size -= 1
     font = ImageFont.truetype("arial.ttf", font_size)
 
 # Calculate the position to center the text horizontally
-text_x = 20 + (text_max_width - font.getsize(text)[0]) // 2
+text_x = 20 + (text_max_width - font.getlength(text)) // 2
 
 # Calculate the position to center the text vertically
 text_y = 212  # Positioned at the bottom with 2-pixel offset
