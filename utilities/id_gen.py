@@ -23,6 +23,10 @@ def create_qr_code(data, box_size=160, border=4):
     return img
 
 def generate_id(user_id, user_name):
+    # Check if ID_CARD_PATH exists, if not create it
+    if not os.path.exists(ID_CARD_PATH):
+        os.makedirs(ID_CARD_PATH)
+
     # Format the data as "userID|userName"
     data = f"{user_id}|{user_name}"
 
