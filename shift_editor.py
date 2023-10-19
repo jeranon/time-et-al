@@ -35,26 +35,26 @@ def add_shift(shift_name, start_time, end_time):
         "end": end_time
     }
     save_shifts(shifts)
-    return LIGHT_GREEN + f"\nShift '{shift_name}' added successfully!" + RESET_COLOR
+    return LIGHT_GREEN + f"Shift '{shift_name}' added successfully!" + RESET_COLOR
 
 def edit_shift(shift_name, new_start_time, new_end_time):
     shifts = load_shifts()
     if shift_name not in shifts:
-        return LIGHT_RED + f"\nShift '{shift_name}' not found!" + RESET_COLOR
+        return LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
     shifts[shift_name] = {
         "start": new_start_time if new_start_time else shifts[shift_name]['start'],
         "end": new_end_time if new_end_time else shifts[shift_name]['end']
     }
     save_shifts(shifts)
-    return LIGHT_GREEN + f"\nShift '{shift_name}' updated successfully!" + RESET_COLOR
+    return LIGHT_GREEN + f"Shift '{shift_name}' updated successfully!" + RESET_COLOR
 
 def delete_shift(shift_name):
     shifts = load_shifts()
     if shift_name not in shifts:
-        return LIGHT_RED + f"\nShift '{shift_name}' not found!" + RESET_COLOR
+        return LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
     del shifts[shift_name]
     save_shifts(shifts)
-    return LIGHT_GREEN + f"\nShift '{shift_name}' deleted successfully!" + RESET_COLOR
+    return LIGHT_GREEN + f"Shift '{shift_name}' deleted successfully!" + RESET_COLOR
 
 def manage_shifts():
     message = ""  # Initialize the message
