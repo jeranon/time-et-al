@@ -118,14 +118,24 @@ def log_event(event_type, message):
         log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
 
 def save_employee_states():
-    combined_data = {}
+    # Load existing employees' data first to preserve the shift values
+    with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "r") as file:
+        combined_data = json.load(file)
+    
     for emp_id in employee_info:
-        combined_data[emp_id] = {
-            "name": employee_info[emp_id],
-            "state": employee_states[emp_id]["state"] if emp_id in employee_states else 0,
-            "last_scan": employee_states[emp_id]["last_scan"] if emp_id in employee_states else "",
-            "shift": "day"  # Default value, modify as needed
-        }
+        if emp_id not in combined_data:
+            combined_data[emp_id] = {
+                "name": employee_info[emp_id],
+                "state": employee_states[emp_id]["state"] if emp_id in employee_states else 0,
+                "last_scan": employee_states[emp_id]["last_scan"] if emp_id in employee_states else "",
+                # No default for shift; it should have been provided during onboarding or via admin console
+            }
+        else:
+            # If the employee exists, only update the name, state, and last_scan, but not the shift
+            combined_data[emp_id]["name"] = employee_info[emp_id]
+            combined_data[emp_id]["state"] = employee_states[emp_id]["state"] if emp_id in employee_states else 0
+            combined_data[emp_id]["last_scan"] = employee_states[emp_id]["last_scan"] if emp_id in employee_states else ""
+
     with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "w") as file:
         json.dump(combined_data, file, indent=4)
 
@@ -222,17 +232,18 @@ def update_employee_data(employee_id, employee_name):
     employees_path = os.path.join(config["paths"]["reference_dir"], "employees.json")
     with open(employees_path, "r") as file:
         employees = json.load(file)
+    
     if employee_id not in employees:
         employees[employee_id] = {
             "name": employee_name,
             "state": 0,
-            "last_scan": "",
-            "shift": "day"  # or whatever default you want
+            "last_scan": ""
         }
     else:
         employees[employee_id]["name"] = employee_name
         employees[employee_id]["state"] = employee_states[employee_id]["state"]
         employees[employee_id]["last_scan"] = employee_states[employee_id]["last_scan"]
+
     with open(employees_path, "w") as file:
         json.dump(employees, file, indent=4)
 

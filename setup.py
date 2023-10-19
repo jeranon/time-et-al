@@ -33,6 +33,7 @@ files_with_initial_data = {
         "ip": "0.0.0.0"
     },
     "data/reference/employees.json": {},
+    "data/reference/shifts.json": {},
     "data/reference/clients.json": [],
     "data/reference/transaction_counter.txt": "0"
 }
