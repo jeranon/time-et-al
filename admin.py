@@ -1,6 +1,6 @@
 import os
 from utilities import onboard, offboard
-from shift_editor import manage_shifts  # Importing the function
+from shift_editor import manage_shifts
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -18,7 +18,7 @@ def display_navigation(message=""):
     print(LIGHT_BLUE + "----------------------\n" + RESET_COLOR)
     print("1. Onboard Employee")
     print("2. Offboard Employee")
-    print("3. Edit Shifts")  # New Option
+    print("3. Edit Shifts")
     print("4. Exit")
     choice = input("\nEnter your choice (1/2/3/4): ")
     return choice
@@ -31,12 +31,11 @@ def main():
     while True:
         choice = display_navigation(message)
         if choice == "1":
-            message = onboard.run_onboard()  # Assuming onboard.py has a function called run_onboard
+            message = onboard.run_onboard()  # Run the onboarding function
         elif choice == "2":
-            message = offboard.run_offboard()  # Assuming offboard.py has a function called run_offboard
+            message = offboard.run_offboard()  # Run the offboarding function
         elif choice == "3":
-            manage_shifts()  # Run the shift management function
-            message = LIGHT_GREEN + "Shifts edited successfully." + RESET_COLOR
+            message = manage_shifts()  # Run the shift management function
         elif choice == "4":
             break
         else:

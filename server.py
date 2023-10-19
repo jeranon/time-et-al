@@ -4,6 +4,8 @@ import json
 import select
 from datetime import datetime, timedelta
 
+SHIFT_FILE_PATH = os.path.join("data", "reference", "shifts.json")
+
 # Function to get the server's IP address
 def get_server_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -128,7 +130,7 @@ def save_employee_states():
                 "name": employee_info[emp_id],
                 "state": employee_states[emp_id]["state"] if emp_id in employee_states else 0,
                 "last_scan": employee_states[emp_id]["last_scan"] if emp_id in employee_states else "",
-                # No default for shift; it should have been provided during onboarding or via admin console
+                "shift": employee_states[emp_id]["shift"] if "shift" in employee_states[emp_id] else "unknown"
             }
         else:
             # If the employee exists, only update the name, state, and last_scan, but not the shift
@@ -202,7 +204,7 @@ def handle_clock_in_out(data, client_address, client_socket):
         else:
             message = f"ERROR: Employee ID {employee_id} not recognized. Please onboard the employee first."
             log_event("ERROR", message)
-            print(f"Sending to client: {message}") # Debugging line
+            # print(f"Sending to client: {message}") # Debugging line
             client_socket.sendall(f"{message}\n".encode())
             return
             
@@ -219,12 +221,12 @@ def handle_clock_in_out(data, client_address, client_socket):
         save_employee_states()
         update_client_data(client_info)
 
-        print(f"Sending to client: {message}")  # Debugging line
+        # print(f"Sending to client: {message}")  # Debugging line
         client_socket.sendall(f"{message}\n".encode())
 
     except Exception as e:
         error_message = f"ERROR: Failed to process request due to: {str(e)}"
-        print(error_message)  # Debugging line
+        # print(error_message)  # Debugging line
         log_event("ERROR", error_message)
         client_socket.sendall(f"{error_message}\n".encode())
 
@@ -288,21 +290,40 @@ def handle_onboarding_request(data):
         # Extract data from the received string
         employee_id, employee_name, shift = data.split("|")
         
-        # Check if the employee already exists
+        # print(f"Received onboarding request: ID={employee_id}, Name={employee_name}, Shift={shift}")  # Debugging
+        
+        # Load shifts to validate the provided shift
+        shifts = load_shifts()
+        # print(f"Loaded shifts: {shifts}")  # Debugging
+        # print(f"Checking if {shift} is in shifts...")
+        # print(f"Type of shifts: {type(shifts)}")
+        # print(f"Content of shifts: {shifts}")
+        
+        # Check if the employee ID or name already exists
         if employee_id in employee_info:
             message = f"ERROR: Employee ID {employee_id} already exists."
             log_event("ONBOARDING", message)
+        elif employee_name in employee_info.values():
+            message = f"ERROR: Employee name {employee_name} already exists."
+            log_event("ONBOARDING", message)
+        elif shift not in shifts:
+            message = f"ERROR: Shift {shift} does not exist. Please add the shift first."
+            log_event("ONBOARDING", message)
         else:
+            # print("Adding new employee...")  # Debugging
+            # print(f"Type of employee_info: {type(employee_info)}")
+            # print(f"Type of employee_states: {type(employee_states)}")
             # Add employee to the data structures
             employee_info[employee_id] = employee_name
             employee_states[employee_id] = {
                 "name": employee_name,
-                "state": 0, # Initial state: Clocked-out
+                "state": 0,  # Initial state: Clocked-out
                 "last_scan": "",
                 "shift": shift
             }
             
             # Save the changes
+            # print("Saving changes...")  # Debugging
             save_employee_states()
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} onboarded."
             log_event("ONBOARDING", message)
@@ -310,8 +331,16 @@ def handle_onboarding_request(data):
         return message
     except Exception as e:
         error_message = f"ERROR: Failed to onboard employee due to: {str(e)}"
+        # print(error_message)  # Debugging
         log_event("ERROR", error_message)
         return error_message
+
+def load_shifts():
+    """
+    Load the shifts from shifts.json.
+    """
+    with open(SHIFT_FILE_PATH, 'r') as file:
+        return json.load(file)
 
 def write_job_tracking_data(employee_id, job_num):
     start_date, _ = get_current_pay_period()
@@ -369,7 +398,7 @@ while True:
                 print(f"Accepted connection from {client_address}")
 
                 data = client_socket.recv(1024).decode().strip()
-                print(f"Received from client: {data}")  # debugging line
+                # print(f"Received from client: {data}")  # debugging line
 
                 if data.startswith("CLOCK:"):
                     handle_clock_in_out(data[6:], client_address, client_socket)  # Pass everything after "CLOCK:"
@@ -377,7 +406,7 @@ while True:
                     response = handle_check_employee_request(data.split(":")[2])
                     log_event("JOB_TRACKING", f"Checked employee status for job tracking: {response}")
                     client_socket.sendall(response.encode())
-                    print(f"Sending to client: {response}")  # debugging line
+                    # print(f"Sending to client: {response}")  # debugging line
                 elif data.startswith("JOB:PROCESS:"):
                     components = data.split(":")[2].split("|")
                     if len(components) != 3:
@@ -388,11 +417,15 @@ while True:
                     response = handle_process_request(emp_id, employee_name, job_num)
                     log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
                     client_socket.sendall(response.encode())
-                    print(f"Sending to client: {response}\n")  # debugging line
+                    # print(f"Sending to client: {response}\n")  # debugging line
                 elif data.startswith("ONBOARD:"):
+                    # print("ONBOARD request identified!")  # Debugging line
                     response = handle_onboarding_request(data[8:])
+                    # print(f"Response from handle_onboarding_request: {response}")  # Debugging
                     client_socket.sendall(response.encode())
-                    print(f"Sending to client: {response}") # debugging line
+                    # print(f"Sending to client: {response}")  # Debugging
+                # else:
+                    # print(f"Unknown request type: {data}") # Debugging line
                 client_socket.close()
 
     except KeyboardInterrupt:
@@ -402,4 +435,8 @@ while True:
         break
     except Exception as e:
         log_event("ERROR", f"An error occurred: {str(e)}")
+        try:
+            client_socket.sendall("ERROR: An unexpected error occurred on the server.\n".encode())
+        except:
+            pass
         client_socket.close()  # Close the client socket if it's still open
