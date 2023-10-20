@@ -173,23 +173,33 @@ def write_time_data(employee_id, employee_name, clock_status, client_info):
 
 def handle_clock_in_out(data, client_address, client_socket):
     try:
-        print("Processing clock in/out request...")
+        # print("---- Starting Clock In/Out Request ----")
+        print(f"Received data: {data}")
+        
         employee_id, employee_name = data.split("|")[:2]
+        # print(f"Extracted Employee ID: {employee_id}, Name: {employee_name}")
+        
         current_date = datetime.now().strftime("%Y-%m-%d")
         current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+        # print(f"Current Date: {current_date}, Current Timestamp: {current_timestamp}")
+        
         # Check if the employee has a saved state and it's from a previous day
-        if employee_id in employee_states and employee_states[employee_id]['last_scan'].split()[0] != current_date:
+        last_scan = employee_states[employee_id]['last_scan']
+        # print(f"Last Scan Timestamp: {last_scan}")
+        if last_scan and employee_id in employee_states and last_scan.split()[0] != current_date:
             employee_states[employee_id]['state'] = 0  # Reset the state to clocked-out
-
+            # print("State reset for a new day.")
+        
         if employee_id in employee_states:
             if employee_info[employee_id] == employee_name:
+                # print(f"Employee name matches the ID. Current state: {employee_states[employee_id]['state']}")
                 if employee_states[employee_id]['state'] == 0:
                     employee_states[employee_id]['state'] = 1
                     message = f"SUCCESS: Clocked in employee: {employee_name}."
                     save_employee_states()
                     log_event("TRANSACTION", f"Employee {employee_name} clocked in.")
                 else:
+                    # print("About to write job tracking data.")
                     # Before we set the state to 0 (clocking out), 
                     # we need to ensure the job tracking for the last job is complete
                     write_job_tracking_data(employee_id, None)
@@ -204,11 +214,11 @@ def handle_clock_in_out(data, client_address, client_socket):
         else:
             message = f"ERROR: Employee ID {employee_id} not recognized. Please onboard the employee first."
             log_event("ERROR", message)
-            # print(f"Sending to client: {message}") # Debugging line
             client_socket.sendall(f"{message}\n".encode())
             return
             
         # Update the last scan time for the employee
+        # print(f"Updating last scan time to: {current_timestamp}")
         employee_states[employee_id]['last_scan'] = current_timestamp
         save_employee_states()
 
@@ -217,16 +227,16 @@ def handle_clock_in_out(data, client_address, client_socket):
             "name": data.split("|")[2] if len(data.split("|")) > 2 else "Unknown"
         }
         
+        # print("About to write time data.")
         write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
         save_employee_states()
         update_client_data(client_info)
 
-        # print(f"Sending to client: {message}")  # Debugging line
         client_socket.sendall(f"{message}\n".encode())
 
     except Exception as e:
         error_message = f"ERROR: Failed to process request due to: {str(e)}"
-        # print(error_message)  # Debugging line
+        print(error_message)
         log_event("ERROR", error_message)
         client_socket.sendall(f"{error_message}\n".encode())
 
