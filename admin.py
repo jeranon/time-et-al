@@ -1,6 +1,7 @@
 import os
 from utilities import onboard, offboard
 from shift_editor import manage_shifts
+import job_analysis  # Import the job_analysis module
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -19,8 +20,9 @@ def display_navigation(message=""):
     print("1. Onboard Employee")
     print("2. Offboard Employee")
     print("3. Edit Shifts")
-    print("4. Exit")
-    choice = input("\nEnter your choice (1/2/3/4): ")
+    print("4. Job Analysis")  # New option for Job Analysis
+    print("5. Exit")
+    choice = input("\nEnter your choice (1/2/3/4/5): ")  # Adjusted input prompt
     return choice
 
 def main():
@@ -36,7 +38,9 @@ def main():
             message = offboard.run_offboard()  # Run the offboarding function
         elif choice == "3":
             message = manage_shifts()  # Run the shift management function
-        elif choice == "4":
+        elif choice == "4":  # New choice for Job Analysis
+            message = job_analysis.main()  # Run the main function of job_analysis
+        elif choice == "5":
             break
         else:
             message = LIGHT_RED + "ERROR: Invalid choice. Please select again." + RESET_COLOR
