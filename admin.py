@@ -2,29 +2,29 @@ import os
 from utilities import onboard, offboard
 from shift_editor import manage_shifts
 import job_analysis  # Import the job_analysis module
+import display_utils
 
-# ANSI Escape Codes for colors
-LIGHT_GREEN = "\033[92m"
-LIGHT_RED = "\033[91m"
-LIGHT_BLUE = "\033[94m"
-RESET_COLOR = "\033[0m"
-
-def display_navigation(message=""):
+def display_navigation(message="", message_color=display_utils.RESET_COLOR):
     """
     Display the main administrative menu for the Time-et-al system.
     """
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(message)
-    print(LIGHT_BLUE + "\nAdmin Menu" + RESET_COLOR)
-    print(LIGHT_BLUE + "----------------------\n" + RESET_COLOR)
-    print("1. Onboard Employee")
-    print("2. Offboard Employee")
-    print("3. Edit Shifts")
-    print("4. Job Analysis")  # New option for Job Analysis
-    print("5. Exit")
-    choice = input("\nEnter your choice (1/2/3/4/5): ")  # Adjusted input prompt
-    return choice
+    # Ensure message and message_color are not None
+    message = message or ""
+    message_color = message_color or display_utils.RESET_COLOR
 
+    display_utils.display_header("Admin Menu", message, message_color)
+    
+    options = {
+        "1": "Onboard Employee",
+        "2": "Offboard Employee",
+        "3": "Edit Shifts",
+        "4": "Job Analysis",
+        "5": "Exit"
+    }
+    display_utils.display_menu(options)
+    choice = input("\nEnter your choice: ")
+    return choice
+    
 def main():
     """
     Main function to run the administrative tasks of the Time-et-al system.

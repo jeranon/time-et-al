@@ -4,5 +4,6 @@ __pycache__/
 data/**/*.json
 data/**/*.log
 data/**/*.txt
+data/**/*.csv
 config/**/*.json
 utilities/id_cards/*.png
