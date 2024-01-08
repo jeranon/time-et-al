@@ -271,17 +271,23 @@ def update_client_data(client_info):
 def handle_check_employee_request(data):
     """
     Check if the provided employee ID is valid and if the employee is clocked in.
+    This check can be bypassed based on the 'bypass_clocked_in_requirement' config setting.
     """
     employee_id, employee_name = data.split('|')
     
+    # Check if employee ID and name are valid
     if employee_id not in employee_info or employee_info[employee_id] != employee_name:
         log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Invalid ID or Name mismatch.")
         return "ERROR: Invalid Employee ID or Name mismatch."
-    if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
-        log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Employee not clocked in.")
-        return "ERROR: Employee not clocked in."
+
+    # Bypass clocked-in check based on configuration
+    if not config.get('bypass_clocked_in_requirement', False):
+        if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
+            log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Employee not clocked in.")
+            return "ERROR: Employee not clocked in."
+
     log_event("JOB_TRACKING", f"Successful check for {employee_name} ({employee_id}): Employee is clocked in.")
-    return f"SUCCESS: {employee_name} is clocked in. Please proceed below."
+    return f"SUCCESS: Thank you, {employee_name}. Please proceed below."
 
 def handle_process_request(employee_id, employee_name, job_num):
     """
@@ -357,11 +363,9 @@ def write_job_tracking_data(employee_id, job_num):
     year = datetime.now().year
     current_day = datetime.now().strftime("%Y-%m-%d")
     
-    # Using os.path.join() to create the full path
     file_path = os.path.join(config["paths"]["job_scans_dir"], str(year), start_date, f"{current_day}.json")
 
-    # Ensure directory exists before writing the file
-    directory = os.path.dirname(file_path)
+    directory = os.path.dirname(file_path)  # Define the directory variable
     if not os.path.exists(directory):
         os.makedirs(directory)
     
@@ -374,20 +378,28 @@ def write_job_tracking_data(employee_id, job_num):
     
     if employee_id not in current_data:
         current_data[employee_id] = []
-    
-    # Check if the employee is already assigned to a job
-    if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
-        current_data[employee_id][-1]['job_end'] = current_timestamp
-        start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
-        end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
-        duration = (end_time - start_time).total_seconds()
-        current_data[employee_id][-1]['total_time'] = duration
-    
-    # Add the new job scan
-    current_data[employee_id].append({
-        "job_start": current_timestamp,
-        "job_num": job_num
-    })
+
+    if job_num == 'EXITJOBS':
+        # Handle the EXITJOBS scan
+        if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
+            current_data[employee_id][-1]['job_end'] = current_timestamp
+            start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
+            end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
+            duration = (end_time - start_time).total_seconds()
+            current_data[employee_id][-1]['total_time'] = duration
+        # Do not start a new job scan for EXITJOBS
+    else:
+        # Normal job scan handling
+        if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
+            current_data[employee_id][-1]['job_end'] = current_timestamp
+            start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
+            end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
+            duration = (end_time - start_time).total_seconds()
+            current_data[employee_id][-1]['total_time'] = duration
+        current_data[employee_id].append({
+            "job_start": current_timestamp,
+            "job_num": job_num
+        })
 
     with open(file_path, 'w') as file:
         json.dump(current_data, file, indent=4)

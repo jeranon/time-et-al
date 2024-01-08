@@ -6,4 +6,4 @@ data/**/*.log
 data/**/*.txt
 data/**/*.csv
 config/**/*.json
-utilities/id_cards/*.png
+scripts/id_cards/*.png

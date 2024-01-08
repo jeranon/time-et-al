@@ -1,6 +1,6 @@
 import os
-from clock_in_out import run_clock_in_out
-from job_tracking import run_job_tracking   # Import the function
+from scripts.clock_in_out import run_clock_in_out
+from scripts.job_tracking import run_job_tracking   # Import the function
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"

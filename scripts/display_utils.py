@@ -10,15 +10,17 @@ def clear_screen():
     """Clears the terminal screen."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def print_colored(message, color):
+def print_colored(message, color=RESET_COLOR):
     """Prints a message in a specified color."""
-    message = message or ""  # Ensure message is a string
-    print(color + message + RESET_COLOR)
+    message = message or ""
+    color = color or RESET_COLOR
+    print("Debug: Color:", repr(color), "Message:", repr(message))  # Diagnostic print
+    print(color + message + RESET_COLOR, flush=True)
 
 def display_header(title, message="", message_color=RESET_COLOR):
     """Displays a header with a reserved line for an optional message above the title."""
     clear_screen()
-    # Always print a line for the message, even if it's empty
+    print("Debug in display_header: Message:", repr(message), "Color:", repr(message_color))  # Debug print
     print_colored(message, message_color if message else RESET_COLOR)
     print()  # Print a blank line
     print_colored(f"{title}\n" + "-" * len(title) + "\n", LIGHT_BLUE)
