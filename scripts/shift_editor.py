@@ -58,6 +58,8 @@ def delete_shift(shift_name):
 
 def manage_shifts():
     message = ""  # Initialize the message
+    message_color = RESET_COLOR #Initialize the message color
+    
     while True:
         display_message_and_prompt(message, "1. Add Shift\n2. Edit Shift\n3. Delete Shift\n4. List Shifts\n5. Exit\n\nEnter your choice (1/2/3/4/5): ")
         choice = input()
@@ -67,23 +69,29 @@ def manage_shifts():
             start_time = input("Enter start time (HH:MM format): ")
             end_time = input("Enter end time (HH:MM format): ")
             message = add_shift(shift_name, start_time, end_time)
+            message_color = LIGHT_GREEN
         elif choice == "2":
             list_shifts()
             shift_name = input("\nEnter the name of the shift you want to edit: ")
             new_start_time = input("Enter new start time (HH:MM format, leave blank to keep the current value): ")
             new_end_time = input("Enter new end time (HH:MM format, leave blank to keep the current value): ")
             message = edit_shift(shift_name, new_start_time, new_end_time)
+            message_color = LIGHT_GREEN
         elif choice == "3":
             list_shifts()
             shift_name = input("\nEnter the name of the shift you want to delete: ")
             message = delete_shift(shift_name)
+            message_color = LIGHT_GREEN
         elif choice == "4":
             list_shifts()
             input("\nPress Enter to go back...")
+            message = "" # reset message
+            message_color = RESET_COLOR # reset color
         elif choice == "5":
-            break
+            return "", RESET_COLOR
         else:
-            message = LIGHT_RED + "ERROR: Invalid choice. Please select again." + RESET_COLOR
+            message = "ERROR: Invalid choice. Please select again."
+            message_color = LIGHT_RED
 
 def display_message_and_prompt(message="", prompt=""):
     """

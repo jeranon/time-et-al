@@ -152,30 +152,38 @@ def main():
     Main function to run the job analysis tasks.
     """
     message = ""  # Initialize the message
+    message_color = RESET_COLOR  # Initialize the message color
 
     while True:
         choice = display_job_analysis_menu(message)
         if choice == "1":
             file_path = select_file()
             if not file_path:
-                message = LIGHT_RED + "No file selected. Returning to the menu." + RESET_COLOR
+                message = "No file selected. Returning to the menu."
+                message_color = LIGHT_RED
                 continue
             jobs = extract_jobs_with_total_hours(file_path)
             csv_path = save_to_csv(jobs, file_path)
-            message = LIGHT_GREEN + f"Results saved to {csv_path}" + RESET_COLOR
+            message = f"Results saved to {csv_path}"
+            message_color = LIGHT_GREEN
             
         elif choice == "2":
             file_path = select_file()
             if not file_path:
-                message = LIGHT_RED + "No file selected. Returning to the menu." + RESET_COLOR
+                message = "No file selected. Returning to the menu."
+                message_color = LIGHT_RED
                 continue
-            # Update the message with the returned message
-            message = generate_human_readable_report(file_path)
+            report_path = generate_human_readable_report(file_path)
+            message = f"Human readable report generated at: {report_path}"
+            message_color = LIGHT_GREEN
             
         elif choice == "3":
-            break
+            return "", RESET_COLOR  # Return an empty message and reset color when exiting
         else:
-            message = LIGHT_RED + "ERROR: Invalid choice. Please select again." + RESET_COLOR
+            message = "ERROR: Invalid choice. Please select again."
+            message_color = LIGHT_RED
+
+        return message, message_color  # Return the message and color
 
 if __name__ == "__main__":
     raise RuntimeError("This script cannot be run directly. Please run it through admin.py.")

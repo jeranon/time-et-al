@@ -27,26 +27,28 @@ def main():
     Main function to run the administrative tasks of the Time-et-al system.
     """
     message = ""  # Initialize the message
+    message_color = display_utils.RESET_COLOR  # Initialize the message color
+
     while True:
-        choice = display_navigation(message)
+        choice = display_navigation(message, message_color)
         
-        # Add debug print here to show the message before running onboard
-        print("Debug: message before onboard:", repr(message))
-        
+        # Reset message and color for each iteration
+        message = ""
+        message_color = display_utils.RESET_COLOR
+
         if choice == "1":
-            message = onboard.run_onboard()  # Run the onboarding function
+            message, message_color = onboard.run_onboard()  # Run the onboarding function and get message and color
         elif choice == "2":
-            message = offboard.run_offboard()  # Run the offboarding function
+            message, message_color = offboard.run_offboard()  # Similar changes for other functions if they return color
         elif choice == "3":
-            message = manage_shifts()  # Run the shift management function
+            message, message_color = manage_shifts()  # Ensure this function also returns a color
         elif choice == "4":
-            message = job_analysis.main()  # Run the job analysis function
+            message, message_color = job_analysis.main()  # Ensure this function also returns a color
         elif choice == "5":
             break
         else:
-            # Correctly setting the message color for error
             message = "ERROR: Invalid choice. Please select again."
-            display_navigation(message, display_utils.LIGHT_RED)
+            message_color = display_utils.LIGHT_RED
 
 if __name__ == "__main__":
     main()

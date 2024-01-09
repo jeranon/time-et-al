@@ -4,7 +4,7 @@ import time
 import os
 
 # Path where the ID cards will be saved
-ID_CARD_PATH = os.path.join("utilities", "id_cards")
+ID_CARD_PATH = os.path.join("scripts", "id_cards")
 
 # Function to create the QR code
 def create_qr_code(data, box_size=160, border=4):

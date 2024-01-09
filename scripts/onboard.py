@@ -33,11 +33,11 @@ def run_onboard():
         employee_id = input("Enter Employee Number or type 'exit' to quit: ").strip()
         
         if employee_id.lower() == "exit":
-            return "Exiting onboarding."
+            return "Exiting onboarding.", display_utils.RESET_COLOR
         
         employee_name = input("Enter Employee Name or type 'exit' to quit: ").strip()
         if employee_name.lower() == "exit":
-            return "Exiting onboarding."
+            return "Exiting onboarding.", display_utils.RESET_COLOR
         
         print("\nAvailable shifts:")
         for shift in shifts:
@@ -45,7 +45,7 @@ def run_onboard():
 
         shift_choice = input("\nEnter the name of the shift for this employee or type 'exit' to quit: ").strip()
         if shift_choice.lower() == "exit":
-            return "Exiting onboarding."
+            return "Exiting onboarding.", display_utils.RESET_COLOR
 
         if shift_choice not in shifts:
             message = "ERROR: Invalid shift choice."
@@ -63,17 +63,15 @@ def run_onboard():
             client_socket.sendall(data.encode())
             response = client_socket.recv(1024).decode().strip()  # Get the server's response
             
-            print("Debug: message before print_colored:", repr(message))
-            
             if "SUCCESS" in response:
                 generate_id(employee_id, employee_name)
                 message = response
-                print("Debug: Color code for success:", repr(display_utils.LIGHT_GREEN))
-                display_utils.print_colored(message, display_utils.LIGHT_GREEN)
+                color = display_utils.LIGHT_GREEN
+                return message, color
             else:
                 message = response
-                print("Debug: Color code for error:", repr(display_utils.LIGHT_RED))
-                display_utils.print_colored(message, display_utils.LIGHT_RED)
+                color = display_utils.LIGHT_RED
+                return message, color
 
 if __name__ == "__main__":
     if can_run_directly:
