@@ -1,5 +1,5 @@
 import os
-from scripts import onboard, offboard, job_analysis, display_utils
+from scripts import onboard, offboard, job_analysis, display_utils, reactivate
 from scripts.shift_editor import manage_shifts
 
 def display_navigation(message="", message_color=display_utils.RESET_COLOR):
@@ -14,9 +14,10 @@ def display_navigation(message="", message_color=display_utils.RESET_COLOR):
     options = {
         "1": "Onboard Employee",
         "2": "Offboard Employee",
-        "3": "Edit Shifts",
-        "4": "Job Analysis",
-        "5": "Exit"
+        "3": "Reactivate Employee",
+        "4": "Edit Shifts",
+        "5": "Job Analysis",
+        "6": "Exit"
     }
     display_utils.display_menu(options)
     choice = input("\nEnter your choice: ")
@@ -37,15 +38,17 @@ def main():
         message_color = display_utils.RESET_COLOR
 
         if choice == "1":
-            message, message_color = onboard.run_onboard()  # Run the onboarding function and get message and color
+            message, message_color = onboard.run_onboard()  # Run the onboarding function
         elif choice == "2":
-            message, message_color = offboard.run_offboard()  # Similar changes for other functions if they return color
+            message, message_color = offboard.run_offboard()  # Run the offboarding function
         elif choice == "3":
-            message, message_color = manage_shifts()  # Ensure this function also returns a color
+            message, message_color = reactivate.run_reactivate()  # Run the reactivation function
         elif choice == "4":
-            message, message_color = job_analysis.main()  # Ensure this function also returns a color
+            message, message_color = manage_shifts()  # Run the shift management function
         elif choice == "5":
-            break
+            message, message_color = job_analysis.main()  # Run the job analysis function
+        elif choice == "6":
+            break  # Exit the loop to terminate the program
         else:
             message = "ERROR: Invalid choice. Please select again."
             message_color = display_utils.LIGHT_RED
