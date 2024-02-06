@@ -120,24 +120,30 @@ def log_event(event_type, message):
         log_file.write(f"[{timestamp}] [{transaction_id}] [{event_type}] {message}\n")
 
 def save_employee_states():
-    # Load existing employees' data first to preserve the shift values
+    # Load existing employees' data first to preserve the shift values and other existing information
     with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "r") as file:
         combined_data = json.load(file)
     
     for emp_id in employee_info:
         if emp_id not in combined_data:
+            # For new employees, add all attributes including 'active' and 'last_scan'
             combined_data[emp_id] = {
                 "name": employee_info[emp_id],
-                "state": employee_states[emp_id]["state"] if emp_id in employee_states else 0,
-                "last_scan": employee_states[emp_id]["last_scan"] if emp_id in employee_states else "",
-                "shift": employee_states[emp_id]["shift"] if "shift" in employee_states[emp_id] else "unknown"
+                "state": employee_states.get(emp_id, {}).get("state", 0),
+                "last_scan": employee_states.get(emp_id, {}).get("last_scan", ""),
+                "shift": employee_states.get(emp_id, {}).get("shift", "unknown"),
+                "active": employee_states.get(emp_id, {}).get("active", 1)  # Default to 1 if not present
             }
         else:
-            # If the employee exists, only update the name, state, and last_scan, but not the shift
-            combined_data[emp_id]["name"] = employee_info[emp_id]
-            combined_data[emp_id]["state"] = employee_states[emp_id]["state"] if emp_id in employee_states else 0
-            combined_data[emp_id]["last_scan"] = employee_states[emp_id]["last_scan"] if emp_id in employee_states else ""
+            # For existing employees, update all attributes including 'last_scan'
+            combined_data[emp_id].update({
+                "name": employee_info[emp_id],
+                "state": employee_states.get(emp_id, {}).get("state", 0),
+                "last_scan": employee_states.get(emp_id, {}).get("last_scan", ""),
+                "active": employee_states.get(emp_id, {}).get("active", 1)  # Update active status, default to 1
+            })
 
+    # Write the updated data back to employees.json
     with open(os.path.join(config["paths"]["reference_dir"], "employees.json"), "w") as file:
         json.dump(combined_data, file, indent=4)
 
@@ -306,15 +312,9 @@ def handle_onboarding_request(data):
         # Extract data from the received string
         employee_id, employee_name, shift = data.split("|")
         
-        # print(f"Received onboarding request: ID={employee_id}, Name={employee_name}, Shift={shift}")  # Debugging
-        
         # Load shifts to validate the provided shift
         shifts = load_shifts()
-        # print(f"Loaded shifts: {shifts}")  # Debugging
-        # print(f"Checking if {shift} is in shifts...")
-        # print(f"Type of shifts: {type(shifts)}")
-        # print(f"Content of shifts: {shifts}")
-        
+
         # Check if the employee ID or name already exists
         if employee_id in employee_info:
             message = f"ERROR: Employee ID {employee_id} already exists."
@@ -326,28 +326,25 @@ def handle_onboarding_request(data):
             message = f"ERROR: Shift {shift} does not exist. Please add the shift first."
             log_event("ONBOARDING", message)
         else:
-            # print("Adding new employee...")  # Debugging
-            # print(f"Type of employee_info: {type(employee_info)}")
-            # print(f"Type of employee_states: {type(employee_states)}")
-            # Add employee to the data structures
+            # Add employee to the data structures with 'active' status set to 1
             employee_info[employee_id] = employee_name
             employee_states[employee_id] = {
                 "name": employee_name,
                 "state": 0,  # Initial state: Clocked-out
                 "last_scan": "",
-                "shift": shift
+                "shift": shift,
+                "active": 1  # Set active status to 1
             }
+            print(f"Onboarding Employee: {employee_states[employee_id]}")  # Debugging line
             
             # Save the changes
-            # print("Saving changes...")  # Debugging
             save_employee_states()
             message = f"SUCCESS: New employee {employee_name} with ID {employee_id} onboarded."
             log_event("ONBOARDING", message)
-            
+
         return message
     except Exception as e:
         error_message = f"ERROR: Failed to onboard employee due to: {str(e)}"
-        # print(error_message)  # Debugging
         log_event("ERROR", error_message)
         return error_message
 
@@ -404,6 +401,44 @@ def write_job_tracking_data(employee_id, job_num):
     with open(file_path, 'w') as file:
         json.dump(current_data, file, indent=4)
 
+def handle_offboarding_request(data):
+    """
+    Handle the offboarding request to deactivate an existing employee.
+    """
+    try:
+        employee_id = data.strip()
+
+        if employee_id not in employee_info:
+            message = f"ERROR: Employee ID {employee_id} does not exist."
+            log_event("OFFBOARDING", message)
+            return message
+
+        # Set the employee as inactive
+        update_employee_active_status(employee_id, 0)
+
+        message = f"SUCCESS: Employee with ID {employee_id} offboarded."
+        log_event("OFFBOARDING", message)
+        return message
+
+    except Exception as e:
+        error_message = f"ERROR: Failed to offboard employee due to: {str(e)}"
+        log_event("ERROR", error_message)
+        return error_message
+
+def update_employee_active_status(employee_id, active_status):
+    """
+    Update the 'active' status of an employee.
+    """
+    employees_path = os.path.join(config["paths"]["reference_dir"], "employees.json")
+    with open(employees_path, "r") as file:
+        employees = json.load(file)
+
+    if employee_id in employees:
+        employees[employee_id]["active"] = active_status
+
+    with open(employees_path, "w") as file:
+        json.dump(employees, file, indent=4)
+
 update_server_ip()
 initialize_employee_data()
 
@@ -446,6 +481,9 @@ while True:
                     # print(f"Response from handle_onboarding_request: {response}")  # Debugging
                     client_socket.sendall(response.encode())
                     # print(f"Sending to client: {response}")  # Debugging
+                elif data.startswith("OFFBOARD:"):
+                    response = handle_offboarding_request(data[9:])
+                    client_socket.sendall(response.encode())
                 # else:
                     # print(f"Unknown request type: {data}") # Debugging line
                 client_socket.close()
