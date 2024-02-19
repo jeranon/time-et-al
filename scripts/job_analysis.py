@@ -26,24 +26,34 @@ def extract_jobs_with_total_hours(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     
-    jobs_dict = defaultdict(float)
+    jobs_dict = defaultdict(lambda: {'total_hours': 0, 'complete': True})
     
     for _, records in data.items():
         for record in records:
             job_num = record.get("job_num")
+            
+            # Normalize the job number to upper case
+            if job_num:
+                job_num = job_num.upper()
+                
             total_time = record.get("total_time")
             
-            # Check if job number exists and total time is not None
-            if job_num and total_time is not None:
-                # Convert total time from seconds to hours and aggregate
-                jobs_dict[job_num] += total_time / 3600
+            # Check if job number exists
+            if job_num:
+                if total_time is not None:
+                    # Convert total time from seconds to hours and aggregate
+                    jobs_dict[job_num]['total_hours'] += total_time / 3600
+                else:
+                    # Mark job as incomplete
+                    jobs_dict[job_num]['complete'] = False
 
     # Round to the nearest quarter hour and handle values less than 0.25
-    for job_num, total_hours in jobs_dict.items():
+    for job_num, job_info in jobs_dict.items():
+        total_hours = job_info['total_hours']
         if 0 < total_hours < 0.25:
-            jobs_dict[job_num] = 0.25
+            jobs_dict[job_num]['total_hours'] = 0.25
         else:
-            jobs_dict[job_num] = round(total_hours * 4) / 4
+            jobs_dict[job_num]['total_hours'] = round(total_hours * 4) / 4
                 
     # Sort the jobs dictionary by job number (alphabetically)
     sorted_jobs = dict(sorted(jobs_dict.items()))
@@ -60,11 +70,13 @@ def save_to_csv(jobs_dict, file_path):
     with open(csv_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         # Write the headers
-        writer.writerow(['Job', 'Hours'])
-        # Write the job totals
-        for job, hours in jobs_dict.items():
-            writer.writerow([f'="{job}"', hours])  # Use Excel's formula syntax to force it as text
-            
+        writer.writerow(['Job', 'Hours', 'Status'])
+
+        for job, job_info in jobs_dict.items():
+            hours = job_info['total_hours']
+            status = 'Complete' if job_info['complete'] else 'Incomplete'
+            writer.writerow([f'="{job}"', hours, status])
+
     return csv_path
 
 def load_employee_names():
@@ -88,17 +100,30 @@ def generate_human_readable_report(file_path):
     # First pass: Generate the report lines without any padding
     virtual_report = []
     for employee_id, records in sorted(data.items(), key=lambda x: employee_names.get(x[0], "Unknown")):
-        valid_records = [rec for rec in records if rec.get("job_num") and "total_time" in rec]
-        total_hours_employee = sum(record["total_time"] for record in valid_records) / 3600
+        # Normalize job numbers to upper case in the records first
+        for record in records:
+            if 'job_num' in record:
+                record['job_num'] = record['job_num'].upper()
+                
+        # Now proceed with the rest of your logic
+        valid_records = [rec for rec in records if rec.get("job_num")]
+        total_hours_employee = sum(record.get("total_time", 0) for record in valid_records) / 3600
         employee_name = employee_names.get(employee_id, "Unknown")
         employee_line = f"{employee_name} ({employee_id}) Total job-hours: {total_hours_employee:.2f} hours"
         virtual_report.append(employee_line)
         
         for record in valid_records:
+            job_num = record.get("job_num")
             start_time = record.get("job_start")
             end_time = record.get("job_end")
-            total_hours = record["total_time"] / 3600
-            job_line = f"    {record['job_num']} : {start_time} to {end_time} - {total_hours:.2f} hours"
+            total_hours = record.get("total_time")
+
+            if total_hours is not None:
+                total_hours = total_hours / 3600
+                job_line = f"    {job_num} : {start_time} to {end_time} - {total_hours:.2f} hours"
+            else:
+                job_line = f"    {job_num} : Incomplete data (Missing end time or total time)"
+            
             virtual_report.append(job_line)
         virtual_report.append("")
 
@@ -108,8 +133,8 @@ def generate_human_readable_report(file_path):
     # Second pass: Generate the report with padding
     report_lines = []
     for employee_id, records in sorted(data.items(), key=lambda x: employee_names.get(x[0], "Unknown")):
-        valid_records = [rec for rec in records if rec.get("job_num") and "total_time" in rec]
-        total_hours_employee = sum(record["total_time"] for record in valid_records) / 3600
+        valid_records = [rec for rec in records if rec.get("job_num")]
+        total_hours_employee = sum(record.get("total_time", 0) for record in valid_records) / 3600
         employee_name = employee_names.get(employee_id, "Unknown")
         total_hours_text = f"Total job-hours: {total_hours_employee:.2f} hours"
         padding_length = longest_line_length - len(employee_name) - len(f" ({employee_id}) ") - len(total_hours_text) + 1
@@ -117,11 +142,18 @@ def generate_human_readable_report(file_path):
         report_lines.append(employee_line)
         
         for record in valid_records:
+            job_num = record.get("job_num")
             start_time = record.get("job_start")
             end_time = record.get("job_end")
-            total_hours = record["total_time"] / 3600
-            padding_length = max_job_length - len(record["job_num"])
-            job_line = f"    {record['job_num']}" + " " * padding_length + f" : {start_time} to {end_time} - {total_hours:.2f} hours"
+            total_hours = record.get("total_time")
+
+            if total_hours is not None:
+                total_hours = total_hours / 3600
+                padding_length = max_job_length - len(job_num)
+                job_line = f"    {job_num}" + " " * padding_length + f" : {start_time} to {end_time} - {total_hours:.2f} hours"
+            else:
+                job_line = f"    {job_num} : Incomplete data (Missing end time or total time)"
+            
             report_lines.append(job_line)
         report_lines.append("")
 
@@ -131,7 +163,7 @@ def generate_human_readable_report(file_path):
     with open(report_path, 'w') as report_file:
         report_file.writelines(line + "\n" for line in report_lines)
 
-    return LIGHT_GREEN + f"Human readable report generated at: {report_path}" + RESET_COLOR
+    return LIGHT_GREEN + f"{report_path}" + RESET_COLOR
 
 def display_job_analysis_menu(message=""):
     """
@@ -159,31 +191,35 @@ def main():
         if choice == "1":
             file_path = select_file()
             if not file_path:
-                message = "No file selected. Returning to the menu."
+                message = "No file selected. Please try again."
                 message_color = LIGHT_RED
-                continue
-            jobs = extract_jobs_with_total_hours(file_path)
-            csv_path = save_to_csv(jobs, file_path)
-            message = f"Results saved to {csv_path}"
-            message_color = LIGHT_GREEN
+            else:
+                jobs = extract_jobs_with_total_hours(file_path)
+                csv_path = save_to_csv(jobs, file_path)
+                message = f"Results saved to {csv_path}"
+                message_color = LIGHT_GREEN
             
         elif choice == "2":
             file_path = select_file()
             if not file_path:
-                message = "No file selected. Returning to the menu."
+                message = "No file selected. Please try again."
                 message_color = LIGHT_RED
-                continue
-            report_path = generate_human_readable_report(file_path)
-            message = f"Human readable report generated at: {report_path}"
-            message_color = LIGHT_GREEN
+            else:
+                report_path = generate_human_readable_report(file_path)
+                message = f"Human readable report generated at: {report_path}"
+                message_color = LIGHT_GREEN
             
         elif choice == "3":
-            return "", RESET_COLOR  # Return an empty message and reset color when exiting
+            break  # Break out of the while loop to return to the admin.py menu
         else:
-            message = "ERROR: Invalid choice. Please select again."
+            message = "Invalid choice. Please select again."
             message_color = LIGHT_RED
 
-        return message, message_color  # Return the message and color
+        # Do not return here, just update the message and continue the loop
+        # return message, message_color  # Remove this line
+
+    # After the loop, you can return the final message if needed
+    return message, message_color
 
 if __name__ == "__main__":
     raise RuntimeError("This script cannot be run directly. Please run it through admin.py.")
