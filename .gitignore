@@ -7,3 +7,8 @@ data/**/*.txt
 data/**/*.csv
 config/**/*.json
 scripts/id_cards/*.png
+automated/drag\ out
+automated/*.encrypted
+automated/emailed/*
+automated/key.bin
+automated/job_data_emailed.json
