@@ -17,7 +17,7 @@ def display_navigation(message="", message_color=display_utils.RESET_COLOR):
         "3": "Reactivate Employee",
         "4": "Edit Shifts",
         "5": "Job Analysis",
-        "6": "Exit"
+        "\n0": "Exit"
     }
     display_utils.display_menu(options)
     choice = input("\nEnter your choice: ")
@@ -47,7 +47,7 @@ def main():
             message, message_color = manage_shifts()  # Run the shift management function
         elif choice == "5":
             message, message_color = job_analysis.main()  # Run the job analysis function
-        elif choice == "6":
+        elif choice == "0":
             break  # Exit the loop to terminate the program
         else:
             message = "ERROR: Invalid choice. Please select again."

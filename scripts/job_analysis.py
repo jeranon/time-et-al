@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import filedialog
 from collections import defaultdict
 import csv
+import socket
+from datetime import datetime
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -175,9 +177,92 @@ def display_job_analysis_menu(message=""):
     print(LIGHT_BLUE + "----------------------\n" + RESET_COLOR)
     print("1. Extract Jobs with Total Hours")
     print("2. Generate Human Readable Report")
-    print("3. Exit")
-    choice = input("\nEnter your choice (1/2/3): ")
+    print("3. Edit Job Records")
+    print("\n0. Exit")
+    choice = input("\nEnter your choice: ")
     return choice
+
+def edit_job_records():
+    file_path = select_file()  # Reuse the existing function to select the file
+    if not file_path:
+        return "No file selected. Please try again.", LIGHT_RED
+
+    with open(file_path, 'r') as file:
+        job_records = json.load(file)
+
+    employee_names = load_employee_names()
+    print("\nCurrent Records for the Day:")
+    for emp_id, records in job_records.items():
+        employee_name = employee_names.get(emp_id, "Unknown")
+        print(f"- {employee_name} ({emp_id})")
+
+    print("\nOptions:")
+    print("1. Edit an existing record")
+    print("2. Add a new record")
+    print("\n0. Exit to previous menu")
+
+    choice = input("Enter your choice: ")
+    if choice == "1":
+        employee_to_edit = input("Enter the employee name or ID to edit: ").strip()
+        # Logic to find and edit the specific record
+        emp_id_to_edit = next((id for id, name in employee_names.items() if name.lower() == employee_to_edit.lower()), employee_to_edit)
+
+        if emp_id_to_edit not in job_records:
+            return f"No records found for {employee_to_edit}.", LIGHT_RED
+
+        # Display records for the selected employee
+        print(f"\nRecords for {employee_names.get(emp_id_to_edit, emp_id_to_edit)}:")
+        for i, record in enumerate(job_records[emp_id_to_edit], start=1):
+            print(f"{i}. Job Num: {record.get('job_num', 'N/A')}, Start: {record.get('job_start', 'N/A')}, End: {record.get('job_end', 'N/A')}")
+
+        record_number = input("Enter the record number to edit: ").strip()
+        if not record_number.isdigit() or int(record_number) - 1 not in range(len(job_records[emp_id_to_edit])):
+            return "Invalid record number.", LIGHT_RED
+
+        # Edit the selected record
+        selected_record = job_records[emp_id_to_edit][int(record_number) - 1]
+        new_start_time = input(f"Enter a new start time [{selected_record.get('job_start')}]: ").strip() or selected_record.get('job_start')
+        new_end_time = input(f"Enter a new end time [{selected_record.get('job_end')}]: ").strip()
+        new_job_num = input(f"Enter a new job number [{selected_record.get('job_num')}]: ").strip().upper() or selected_record.get('job_num')
+
+        # Update the record
+        selected_record['job_start'] = new_start_time
+        if new_end_time:  # Only update end time if a new value is provided
+            selected_record['job_end'] = new_end_time
+
+        # Recalculate total time if both start and end times are available
+        if 'job_start' in selected_record and 'job_end' in selected_record and selected_record['job_end']:
+            fmt = '%Y-%m-%d %H:%M:%S'
+            total_seconds = (datetime.strptime(selected_record['job_end'], fmt) - datetime.strptime(selected_record['job_start'], fmt)).total_seconds()
+            selected_record['total_time'] = total_seconds
+
+        try:
+            local_ip = socket.gethostbyname(socket.gethostname())
+        except Exception as e:
+            local_ip = "Unavailable"
+            print(f"Error obtaining IP address: {e}")
+
+        # Add/Edit metadata
+        selected_record['hours_edited'] = True
+        selected_record['edited_ip'] = local_ip
+        selected_record['edited_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Save the updated content back to the file
+        with open(file_path, 'w') as file:
+            json.dump(job_records, file, indent=4)
+
+        return "Job records updated successfully.", LIGHT_GREEN
+
+    elif choice == "2":
+        return "", RESET_COLOR
+        # Logic to add a new record
+        # ...
+    elif choice == "0":
+        return "", RESET_COLOR
+    else:
+        return "Invalid choice. Please select again.", LIGHT_RED
+
+    return "Job records updated successfully."
 
 def main():
     """
@@ -208,15 +293,15 @@ def main():
                 report_path = generate_human_readable_report(file_path)
                 message = f"Human readable report generated at: {report_path}"
                 message_color = LIGHT_GREEN
-            
+
         elif choice == "3":
+            message, message_color = edit_job_records()
+
+        elif choice == "0":
             break  # Break out of the while loop to return to the admin.py menu
         else:
             message = "Invalid choice. Please select again."
             message_color = LIGHT_RED
-
-        # Do not return here, just update the message and continue the loop
-        # return message, message_color  # Remove this line
 
     # After the loop, you can return the final message if needed
     return message, message_color

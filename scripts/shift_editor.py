@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -22,33 +23,113 @@ def save_shifts(shifts):
     with open(SHIFT_FILE_PATH, 'w') as file:
         json.dump(shifts, file, indent=4)
 
-def list_shifts():
-    shifts = load_shifts()
-    print("\nCurrent Shifts:")
-    for shift_name, timings in shifts.items():
-        print(f"- {shift_name}: {timings['start']} to {timings['end']}")
+def is_valid_time(time_str):
+    try:
+        datetime.strptime(time_str, '%H:%M')
+        return True
+    except ValueError:
+        return False
 
-def add_shift(shift_name, start_time, end_time):
-    shifts = load_shifts()
-    shifts[shift_name] = {
-        "start": start_time,
-        "end": end_time
-    }
-    save_shifts(shifts)
-    return LIGHT_GREEN + f"Shift '{shift_name}' added successfully!" + RESET_COLOR
+def is_time_overlap(start_time, end_time):
+    start = datetime.strptime(start_time, '%H:%M')
+    end = datetime.strptime(end_time, '%H:%M')
+    # Handle rollover to next day
+    if start > end:
+        return end.hour <= 4  # Assuming the end time should not exceed 04:59
+    else:
+        return start < end
 
-def edit_shift(shift_name, new_start_time, new_end_time):
+def get_shift_times():
+    times = {}
+    common_days = input("Enter days with common times (e.g., M,T,W,Th,F): ").split(',')
+    if common_days:
+        common_start = input("Enter common start time (HH:MM): ")
+        common_end = input("Enter common end time (HH:MM): ")
+        if is_valid_time(common_start) and is_valid_time(common_end) and is_time_overlap(common_start, common_end):
+            for day in common_days:
+                times[day.strip()] = {"start": common_start, "end": common_end}
+        else:
+            print(LIGHT_RED + "Invalid time format or overlap." + RESET_COLOR)
+            return {}
+
+    individual_days = input("Enter days with individual times (leave blank if none): ").split(',')
+    for day in individual_days:
+        day = day.strip()
+        if day and day not in times:
+            start = input(f"Enter start time for {day} (HH:MM): ")
+            end = input(f"Enter end time for {day} (HH:MM): ")
+            if is_valid_time(start) and is_valid_time(end) and is_time_overlap(start, end):
+                times[day] = {"start": start, "end": end}
+            else:
+                print(LIGHT_RED + "Invalid time format or overlap." + RESET_COLOR)
+                return {}
+    return times
+
+def get_lunch_break():
+    lunch_start = input("Enter lunch start time (HH:MM): ")
+    lunch_end = input("Enter lunch end time (HH:MM): ")
+    if is_valid_time(lunch_start) and is_valid_time(lunch_end) and is_time_overlap(lunch_start, lunch_end):
+        return {"start": lunch_start, "end": lunch_end}
+    else:
+        print(LIGHT_RED + "Invalid lunch break time format or overlap." + RESET_COLOR)
+        return None
+
+def list_shifts(only_names=False):
+    shifts = load_shifts()
+    print("\nAvailable Shifts:")
+    for shift_name in shifts.keys():
+        print(f"- {shift_name}")
+        if not only_names:
+            shift_details = shifts[shift_name]
+            for day, timings in shift_details['times'].items():
+                print(f"  {day}: {timings['start']} to {timings['end']}")
+            print(f"  Lunch: {shift_details['lunch']['start']} to {shift_details['lunch']['end']}")
+
+def display_shift_details(shift_name):
     shifts = load_shifts()
     if shift_name not in shifts:
         return LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
-    shifts[shift_name] = {
-        "start": new_start_time if new_start_time else shifts[shift_name]['start'],
-        "end": new_end_time if new_end_time else shifts[shift_name]['end']
-    }
-    save_shifts(shifts)
-    return LIGHT_GREEN + f"Shift '{shift_name}' updated successfully!" + RESET_COLOR
+    print(f"\nDetails for shift '{shift_name}':")
+    shift_details = shifts[shift_name]
+    for day, timings in shift_details['times'].items():
+        print(f"  {day}: {timings['start']} to {timings['end']}")
+    print(f"  Lunch: {shift_details['lunch']['start']} to {shift_details['lunch']['end']}")
+
+def add_shift():
+    shift_name = input("Enter shift name: ")
+    shift_times = get_shift_times()
+    lunch_break = get_lunch_break()
+    if shift_times and lunch_break:
+        shifts = load_shifts()
+        shifts[shift_name] = {"times": shift_times, "lunch": lunch_break}
+        save_shifts(shifts)
+        return LIGHT_GREEN + f"Shift '{shift_name}' added successfully!" + RESET_COLOR
+    else:
+        return LIGHT_RED + "Shift not added due to invalid input." + RESET_COLOR
+
+def edit_shift(shift_name):
+    if shift_name.lower() == 'exit':
+        return "", RESET_COLOR
+
+    shifts = load_shifts()
+    if shift_name not in shifts:
+        return LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
+
+    print("Editing shift times. Leave blank to keep current values.")
+    shift_times = get_shift_times()
+    lunch_break = get_lunch_break()
+
+    if shift_times and lunch_break:
+        shifts[shift_name] = {"times": shift_times, "lunch": lunch_break}
+        save_shifts(shifts)
+        return LIGHT_GREEN + f"Shift '{shift_name}' updated successfully!" + RESET_COLOR
+    else:
+        return LIGHT_RED + "Shift not updated due to invalid input." + RESET_COLOR
 
 def delete_shift(shift_name):
+    if shift_name.lower() == 'exit':
+        return "", RESET_COLOR
+
     shifts = load_shifts()
     if shift_name not in shifts:
         return LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
@@ -56,38 +137,66 @@ def delete_shift(shift_name):
     save_shifts(shifts)
     return LIGHT_GREEN + f"Shift '{shift_name}' deleted successfully!" + RESET_COLOR
 
+def prompt_for_shift_action(action):
+    list_shifts()
+    shift_name = input(f"\nEnter the name of the shift you want to {action}: (type 'exit' to return) ")
+    if shift_name.lower() == 'exit':
+        return None
+    return shift_name
+
 def manage_shifts():
     message = ""  # Initialize the message
-    message_color = RESET_COLOR #Initialize the message color
-    
+    message_color = RESET_COLOR  # Initialize the message color
+
     while True:
-        display_message_and_prompt(message, "1. Add Shift\n2. Edit Shift\n3. Delete Shift\n4. List Shifts\n5. Exit\n\nEnter your choice (1/2/3/4/5): ")
-        choice = input()
-        
+        display_message_and_prompt(message, "1. Add Shift\n2. Edit Shift\n3. Delete Shift\n4. List Shifts\n\n0. Exit\n\nEnter your choice: ")
+        choice = input().strip().lower()
+
         if choice == "1":
-            shift_name = input("Enter shift name: ")
-            start_time = input("Enter start time (HH:MM format): ")
-            end_time = input("Enter end time (HH:MM format): ")
-            message = add_shift(shift_name, start_time, end_time)
-            message_color = LIGHT_GREEN
-        elif choice == "2":
-            list_shifts()
-            shift_name = input("\nEnter the name of the shift you want to edit: ")
-            new_start_time = input("Enter new start time (HH:MM format, leave blank to keep the current value): ")
-            new_end_time = input("Enter new end time (HH:MM format, leave blank to keep the current value): ")
-            message = edit_shift(shift_name, new_start_time, new_end_time)
-            message_color = LIGHT_GREEN
-        elif choice == "3":
-            list_shifts()
-            shift_name = input("\nEnter the name of the shift you want to delete: ")
-            message = delete_shift(shift_name)
-            message_color = LIGHT_GREEN
+            shift_name = input("What is the name of the shift? (type 'exit' to return to the previous menu): ")
+            if shift_name.lower() == 'exit':
+                continue  # Go back to the main menu
+            shift_times = get_shift_times()
+            if not shift_times:
+                message = LIGHT_RED + "Invalid shift times. Please try again." + RESET_COLOR
+                continue
+            lunch_break = get_lunch_break()
+            if not lunch_break:
+                message = LIGHT_RED + "Invalid lunch break times. Please try again." + RESET_COLOR
+                continue
+            shifts = load_shifts()
+            shifts[shift_name] = {"times": shift_times, "lunch": lunch_break}
+            save_shifts(shifts)
+            message = LIGHT_GREEN + f"Shift '{shift_name}' added successfully!" + RESET_COLOR
+        elif choice in ["2", "3"]:
+            list_shifts(only_names=True)
+            shift_name = input(f"\nEnter the name of the shift you want to {'edit' if choice == '2' else 'delete'}: ")
+            if shift_name.lower() == 'exit':
+                continue
+            if shift_name in load_shifts():
+                display_shift_details(shift_name)
+                confirm = input(f"Do you want to {'edit' if choice == '2' else 'delete'} this shift? (yes/no): ").lower()
+                if confirm == 'yes':
+                    if choice == "2":
+                        message = edit_shift(shift_name)
+                    elif choice == "3":
+                        message = delete_shift(shift_name)
+                    message_color = LIGHT_GREEN
+                else:
+                    continue
+            else:
+                message = LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
         elif choice == "4":
-            list_shifts()
+            list_shifts(only_names=True)
+            shift_name = input(f"\nEnter the name of the shift for which you want to see details: (type 'exit' to return) ")
+            if shift_name.lower() == 'exit':
+                continue
+            if shift_name in load_shifts():
+                display_shift_details(shift_name)
+            else:
+                message = LIGHT_RED + f"Shift '{shift_name}' not found!" + RESET_COLOR
             input("\nPress Enter to go back...")
-            message = "" # reset message
-            message_color = RESET_COLOR # reset color
-        elif choice == "5":
+        elif choice == "0":
             return "", RESET_COLOR
         else:
             message = "ERROR: Invalid choice. Please select again."
