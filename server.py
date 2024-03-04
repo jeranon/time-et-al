@@ -337,6 +337,8 @@ def write_job_tracking_data(employee_id, job_num):
     
     if employee_id not in current_data:
         current_data[employee_id] = []
+        
+    shift_name = employee_states[employee_id]["shift"]
 
     if job_num == 'EXITJOBS':
         # Handle the EXITJOBS scan
@@ -357,7 +359,8 @@ def write_job_tracking_data(employee_id, job_num):
             current_data[employee_id][-1]['total_time'] = duration
         current_data[employee_id].append({
             "job_start": current_timestamp,
-            "job_num": job_num
+            "job_num": job_num,
+            "shift_name": shift_name
         })
 
     with open(file_path, 'w') as file:

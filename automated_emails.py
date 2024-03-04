@@ -98,36 +98,33 @@ def send_email(subject, body, file_paths, credentials):
     except Exception as e:
         print(f"Failed to send email: {e}")
 
-def extract_jobs_with_total_hours(data, shifts, employees):
+def extract_jobs_with_total_hours(data, shifts):
     jobs_dict = defaultdict(lambda: {'total_hours': 0, 'complete': True})
 
     for employee_id, records in data.items():
-        employee_shift = employees[employee_id]['shift']
-        lunch_start = shifts[employee_shift]['lunch']['start']
-        lunch_end = shifts[employee_shift]['lunch']['end']
-        # Convert lunch period to seconds since midnight for comparison
-        lunch_start_sec = time_to_seconds(lunch_start)
-        lunch_end_sec = time_to_seconds(lunch_end)
-
         for record in records:
             job_num = record.get("job_num")
-            # Normalize the job number to upper case
             if job_num:
                 job_num = job_num.upper()
-
                 start_time = record.get("job_start")
                 end_time = record.get("job_end")
                 total_time = record.get("total_time", 0)
+                shift_name = record.get("shift_name", "unknown")  # Get shift name from record
 
-                # Check if the job was clocked out
                 if total_time is not None:
+                    # Use shift_name to get lunch times
+                    lunch_start = shifts[shift_name]['lunch']['start']
+                    lunch_end = shifts[shift_name]['lunch']['end']
+                    lunch_start_sec = time_to_seconds(lunch_start)
+                    lunch_end_sec = time_to_seconds(lunch_end)
+                    
                     # Check for overlap with lunch period and adjust total time
                     start_sec = time_to_seconds(start_time.split(" ")[1])
                     end_sec = time_to_seconds(end_time.split(" ")[1])
                     if start_sec < lunch_end_sec and end_sec > lunch_start_sec:
                         lunch_duration = min(end_sec, lunch_end_sec) - max(start_sec, lunch_start_sec)
                         total_time -= lunch_duration
-
+    
                     jobs_dict[job_num]['total_hours'] += total_time / 3600
                 else:
                     # Mark job as incomplete
@@ -170,22 +167,21 @@ def load_employees():
         return json.load(file)
 
 def generate_human_readable_report(data, report_path, employees, shifts):
-    employee_data = load_employees()
-
     # Group employees by shift
     shift_groups = defaultdict(list)
-    for employee_id in data:
-        shift = employee_data[employee_id]['shift']
-        shift_groups[shift].append(employee_id)
+    for employee_id, records in data.items():
+        for record in records:
+            shift_name = record.get("shift_name", "unknown")
+            shift_groups[shift_name].append((employee_id, record))
 
-    # First pass: Generate the virtual report lines to determine the longest line length
+    # First pass: Generate the virtual report lines
     virtual_report = []
-    for shift, employee_ids in shift_groups.items():
+    for shift, employee_records in shift_groups.items():
         virtual_report.append(f"Shift: {shift}")
-        for employee_id in sorted(employee_ids, key=lambda e: employee_data[e]['name']):
-            virtual_report.extend(virtual_report_lines_for_employee(data[employee_id], employee_id, employee_data, shifts))
+        for employee_id, record in employee_records:
+            virtual_report.extend(virtual_report_lines_for_employee(record, employee_id, employees, shifts))
         virtual_report.append("")
-
+        
     longest_line_length = max(len(line) for line in virtual_report)
 
     # Second pass: Normalize line lengths
@@ -202,41 +198,40 @@ def generate_human_readable_report(data, report_path, employees, shifts):
         for line in report_lines:
             report_file.write(line + "\n")
 
-def virtual_report_lines_for_employee(records, employee_id, employee_data, shifts):
+def virtual_report_lines_for_employee(record, employee_id, employees, shifts):
     virtual_report = []
-    employee_name = employee_data[employee_id]['name']
-    employee_shift = employee_data[employee_id]['shift']
-    lunch_start = shifts[employee_shift]['lunch']['start'] + ":00"  # Added seconds
-    lunch_end = shifts[employee_shift]['lunch']['end'] + ":00"    # Added seconds
+    employee_name = employees[employee_id]['name']  # Retrieve employee name from employees data
+    shift_name = record.get("shift_name", "unknown")
+    lunch_start = shifts[shift_name]['lunch']['start'] + ":00"
+    lunch_end = shifts[shift_name]['lunch']['end'] + ":00"
 
     total_hours_employee = 0
-    for record in records:
-        job_num = record.get("job_num", "").upper()
-        start_time = record.get("job_start")
-        end_time = record.get("job_end")
-        total_hours = record.get("total_time", 0)
+    job_num = record.get("job_num", "").upper()
+    start_time = record.get("job_start")
+    end_time = record.get("job_end")
+    total_hours = record.get("total_time", 0)
 
-        # Format lunch times with the date from the job start time
-        date_str = start_time.split()[0]
-        formatted_lunch_start = f"{date_str} {lunch_start}"
-        formatted_lunch_end = f"{date_str} {lunch_end}"
+    # Format lunch times with the date from the job start time
+    date_str = start_time.split()[0]
+    formatted_lunch_start = f"{date_str} {lunch_start}"
+    formatted_lunch_end = f"{date_str} {lunch_end}"
 
-        # Splitting the job around the lunch break
-        if overlaps_lunch(start_time, end_time, formatted_lunch_start, formatted_lunch_end):
-            pre_lunch_hours, post_lunch_hours = split_job_hours(start_time, end_time, formatted_lunch_start, formatted_lunch_end)
-            total_hours_employee += pre_lunch_hours + post_lunch_hours
+    # Splitting the job around the lunch break
+    if overlaps_lunch(start_time, end_time, formatted_lunch_start, formatted_lunch_end):
+        pre_lunch_hours, post_lunch_hours = split_job_hours(start_time, end_time, formatted_lunch_start, formatted_lunch_end)
+        total_hours_employee += pre_lunch_hours + post_lunch_hours
 
-            virtual_report.append(f"    {job_num} : {start_time} to {formatted_lunch_start} - {pre_lunch_hours:.2f} hours")
-            virtual_report.append(f"    {job_num} : {formatted_lunch_end} to {end_time} - {post_lunch_hours:.2f} hours")
-        else:
-            total_hours_employee += total_hours / 3600
-            if total_hours is not None:
-                job_line = f"    {job_num} : {start_time} to {end_time} - {total_hours / 3600:.2f} hours"
-                virtual_report.append(job_line)
+        virtual_report.append(f"    {job_num} : {start_time} to {formatted_lunch_start} - {pre_lunch_hours:.2f} hours")
+        virtual_report.append(f"    {job_num} : {formatted_lunch_end} to {end_time} - {post_lunch_hours:.2f} hours")
+    else:
+        total_hours_employee += total_hours / 3600
+        if total_hours is not None:
+            job_line = f"    {job_num} : {start_time} to {end_time} - {total_hours / 3600:.2f} hours"
+            virtual_report.append(job_line)
 
     employee_line = f"{employee_name} ({employee_id}) Total job-hours: {total_hours_employee:.2f} hours"
     virtual_report.insert(0, employee_line)  # Insert at the beginning of the list
-
+    
     return virtual_report
 
 def overlaps_lunch(start_time, end_time, lunch_start, lunch_end):
@@ -278,9 +273,8 @@ def split_job_hours(start_time, end_time, pre_lunch_end, post_lunch_start):
     return pre_lunch_hours, post_lunch_hours
 
 def process_files(actions_needed, emailed_data):
-    # Load shift and employee data
+    # Load shift data
     shifts = load_shift_data()
-    employees = load_employees()
 
     for file_path in actions_needed['process']:
         print(f"Processing file: {file_path}")
@@ -295,10 +289,12 @@ def process_files(actions_needed, emailed_data):
             data = json.load(file)
 
         # Generate reports with shift data
-        jobs = extract_jobs_with_total_hours(data, shifts, employees)
+        jobs = extract_jobs_with_total_hours(data, shifts)
         csv_file_path = report_folder / (file_path.stem + ".csv")
         save_to_csv(jobs, csv_file_path)
 
+        # Since we need employee names for the report, load employee data
+        employees = load_employees()
         report_file_path = report_folder / (file_path.stem + " - Report.txt")
         generate_human_readable_report(data, report_file_path, employees, shifts)
 
