@@ -181,9 +181,10 @@ def generate_human_readable_report(data, report_path, employees, shifts):
     # First pass: Generate the virtual report lines to determine the longest line length
     virtual_report = []
     for shift, employee_ids in shift_groups.items():
-        virtual_report.append(f"Shift: {shift}\n")
+        virtual_report.append(f"Shift: {shift}")
         for employee_id in sorted(employee_ids, key=lambda e: employee_data[e]['name']):
             virtual_report.extend(virtual_report_lines_for_employee(data[employee_id], employee_id, employee_data, shifts))
+        virtual_report.append("")
 
     longest_line_length = max(len(line) for line in virtual_report)
 
