@@ -81,6 +81,12 @@ def save_to_csv(jobs_dict, file_path):
 
     return csv_path
 
+def load_employees():
+    """Load all employee data from employees.json."""
+    EMPLOYEE_FILE_PATH = os.path.join("data", "reference", "employees.json")
+    with open(EMPLOYEE_FILE_PATH, 'r') as file:
+        return json.load(file)
+
 def load_employee_names():
     """Load employee names from employees.json."""
     EMPLOYEE_FILE_PATH = os.path.join("data", "reference", "employees.json")
@@ -167,6 +173,46 @@ def generate_human_readable_report(file_path):
 
     return LIGHT_GREEN + f"{report_path}" + RESET_COLOR
 
+def add_new_job_record(job_records, employees):
+    # List active employees
+    active_employees = {emp_id: emp_info for emp_id, emp_info in employees.items() if emp_info['active'] == 1}
+    print("\nSelect an active employee:")
+    for emp_id, emp_info in sorted(active_employees.items(), key=lambda x: x[1]['name']):
+        print(f"{emp_id}: {emp_info['name']}")
+
+    employee_id = input("Enter the employee ID for the new record: ").strip()
+    if employee_id not in active_employees:
+        return "Invalid employee ID.", LIGHT_RED
+
+    # Prompt for job details
+    job_num = input("Enter job number: ").strip().upper()
+    job_start = input("Enter job start time (YYYY-MM-DD HH:MM:SS): ").strip()
+    job_end = input("Enter job end time (YYYY-MM-DD HH:MM:SS) or press Enter to leave blank: ").strip()
+
+    new_record = {"job_num": job_num, "job_start": job_start}
+    if job_end:
+        new_record["job_end"] = job_end
+        # Calculate total_time if end time is provided
+        fmt = '%Y-%m-%d %H:%M:%S'
+        total_seconds = (datetime.strptime(job_end, fmt) - datetime.strptime(job_start, fmt)).total_seconds()
+        new_record["total_time"] = total_seconds
+
+    # Add metadata to indicate manual addition
+    try:
+        local_ip = socket.gethostbyname(socket.gethostname())
+    except Exception as e:
+        local_ip = "Unavailable"
+        print(f"Error obtaining IP address: {e}")
+
+    new_record['hours_edited'] = True
+    new_record['edited_ip'] = local_ip
+    new_record['edited_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # Append the new record to the employee's job records
+    job_records.setdefault(employee_id, []).append(new_record)
+
+    return "New job record added successfully.", LIGHT_GREEN
+
 def display_job_analysis_menu(message=""):
     """
     Display the job analysis menu.
@@ -191,6 +237,8 @@ def edit_job_records():
         job_records = json.load(file)
 
     employee_names = load_employee_names()
+    employees = load_employees()
+    
     print("\nCurrent Records for the Day:")
     for emp_id, records in job_records.items():
         employee_name = employee_names.get(emp_id, "Unknown")
@@ -202,6 +250,7 @@ def edit_job_records():
     print("\n0. Exit to previous menu")
 
     choice = input("Enter your choice: ")
+    
     if choice == "1":
         employee_to_edit = input("Enter the employee name or ID to edit: ").strip()
         # Logic to find and edit the specific record
@@ -254,11 +303,12 @@ def edit_job_records():
         return "Job records updated successfully.", LIGHT_GREEN
 
     elif choice == "2":
-        return "", RESET_COLOR
-        # Logic to add a new record
-        # ...
+        message, message_color = add_new_job_record(job_records, employees)
+        # Save the updated content back to the file
+        with open(file_path, 'w') as file:
+            json.dump(job_records, file, indent=4)
     elif choice == "0":
-        return "", RESET_COLOR
+            return "", RESET_COLOR
     else:
         return "Invalid choice. Please select again.", LIGHT_RED
 
