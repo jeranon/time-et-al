@@ -1,5 +1,5 @@
 import os
-from scripts import onboard, offboard, job_analysis, display_utils, reactivate
+from scripts import onboard, offboard, job_analysis, display_utils, reactivate, reprint_ID
 from scripts.shift_editor import manage_shifts
 
 def display_navigation(message="", message_color=display_utils.RESET_COLOR):
@@ -15,8 +15,9 @@ def display_navigation(message="", message_color=display_utils.RESET_COLOR):
         "1": "Onboard Employee",
         "2": "Offboard Employee",
         "3": "Reactivate Employee",
-        "4": "Edit Shifts",
-        "5": "Job Analysis",
+        "4": "Reprint ID Card",
+        "5": "Edit Shifts",
+        "6": "Job Analysis",
         "\n0": "Exit"
     }
     display_utils.display_menu(options)
@@ -44,9 +45,11 @@ def main():
         elif choice == "3":
             message, message_color = reactivate.run_reactivate()  # Run the reactivation function
         elif choice == "4":
-            message, message_color = manage_shifts()  # Run the shift management function
+            message, message_color = reprint_ID.run_reprint()  # Run the reprint ID function
         elif choice == "5":
-            message, message_color = job_analysis.main()  # Run the job analysis function
+            message, message_color = manage_shifts()  # Run the shift management function, now moved to option 5
+        elif choice == "6":
+            message, message_color = job_analysis.main()  # Run the job analysis function, now moved to option 6
         elif choice == "0":
             break  # Exit the loop to terminate the program
         else:
