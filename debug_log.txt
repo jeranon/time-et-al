@@ -1,3 +1,0 @@
-Debug: Color code set to red: '\x1b[91m'
-Debug: Color code set to red: '\x1b[91m'
-Debug: Color code set to red: '\x1b[91m'
