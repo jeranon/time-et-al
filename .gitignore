@@ -12,3 +12,4 @@ automated/*.encrypted
 automated/emailed/*
 automated/key.bin
 automated/job_data_emailed.json
+*.bak
