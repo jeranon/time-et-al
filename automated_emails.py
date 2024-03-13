@@ -167,21 +167,48 @@ def load_employees():
         return json.load(file)
 
 def generate_human_readable_report(data, report_path, employees, shifts):
-    # Group employees by shift
-    shift_groups = defaultdict(list)
+    # Aggregate records by employee
+    employee_records = defaultdict(list)
     for employee_id, records in data.items():
         for record in records:
-            shift_name = record.get("shift_name", "unknown")
-            shift_groups[shift_name].append((employee_id, record))
+            employee_records[employee_id].append(record)
 
     # First pass: Generate the virtual report lines
     virtual_report = []
-    for shift, employee_records in shift_groups.items():
-        virtual_report.append(f"Shift: {shift}")
-        for employee_id, record in employee_records:
-            virtual_report.extend(virtual_report_lines_for_employee(record, employee_id, employees, shifts))
+
+    for employee_id, records in employee_records.items():
+        employee_name = employees[employee_id]['name']
+        total_hours_employee = 0
+        employee_lines = []
+
+        for record in records:
+            job_num = record.get("job_num", "").upper()
+            start_time = record.get("job_start")
+            end_time = record.get("job_end")
+            shift_name = record.get("shift_name", "unknown")
+            date_str = start_time.split()[0]
+
+            lunch_start_with_date = f"{date_str} {shifts[shift_name]['lunch']['start']}:00"
+            lunch_end_with_date = f"{date_str} {shifts[shift_name]['lunch']['end']}:00"
+
+            # Calculate hours for this job record
+            pre_lunch_hours, post_lunch_hours = split_job_hours(start_time, end_time, lunch_start_with_date, lunch_end_with_date)
+
+            if overlaps_lunch(start_time, end_time, lunch_start_with_date, lunch_end_with_date):
+                employee_lines.append(f"    {job_num} : {start_time} to {lunch_start_with_date} - {pre_lunch_hours:.2f} hours")
+                employee_lines.append(f"    {job_num} : {lunch_end_with_date} to {end_time} - {post_lunch_hours:.2f} hours")
+                total_hours_employee += pre_lunch_hours + post_lunch_hours
+            else:
+                total_hours_record = record.get("total_time", 0) / 3600
+                employee_lines.append(f"    {job_num} : {start_time} to {end_time} - {total_hours_record:.2f} hours")
+                total_hours_employee += total_hours_record
+
+        employee_header = f"{employee_name} ({employee_id}) Total job-hours: {total_hours_employee:.2f} hours"
+        virtual_report.append(employee_header)
+        virtual_report.extend(employee_lines)
         virtual_report.append("")
-        
+
+    # Calculate the longest line length
     longest_line_length = max(len(line) for line in virtual_report)
 
     # Second pass: Normalize line lengths
