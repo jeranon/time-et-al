@@ -110,7 +110,11 @@ def extract_jobs_with_total_hours(data, shifts):
                 end_time = record.get("job_end")
                 total_time = record.get("total_time", 0)
                 shift_name = record.get("shift_name", "unknown")  # Get shift name from record
-
+                
+                if end_time is None:
+                    jobs_dict[job_num]['complete'] = False
+                    continue #Skip time calculations for this record
+                
                 if total_time is not None:
                     # Use shift_name to get lunch times
                     lunch_start = shifts[shift_name]['lunch']['start']
@@ -190,6 +194,10 @@ def generate_human_readable_report(data, report_path, employees, shifts):
 
             lunch_start_with_date = f"{date_str} {shifts[shift_name]['lunch']['start']}:00"
             lunch_end_with_date = f"{date_str} {shifts[shift_name]['lunch']['end']}:00"
+            
+            if end_time is None:
+                employee_lines.append(f"    {job_num} : Incomplete job record")
+                continue
 
             # Calculate hours for this job record
             pre_lunch_hours, post_lunch_hours = split_job_hours(start_time, end_time, lunch_start_with_date, lunch_end_with_date)
