@@ -1,6 +1,5 @@
 import os
 from scripts.clock_in_out import run_clock_in_out
-from scripts.job_tracking import run_job_tracking   # Import the function
 
 # ANSI Escape Codes for colors
 LIGHT_GREEN = "\033[92m"
@@ -17,9 +16,8 @@ def display_navigation(message=""):
     print(LIGHT_BLUE + "\nMain Loader" + RESET_COLOR)
     print(LIGHT_BLUE + "----------------------\n" + RESET_COLOR)
     print("1. Clock In/Out")
-    print("2. Job Tracking")
-    print("3. Exit")
-    choice = input("\nEnter your choice (1/2/3): ")
+    print("2. Exit")
+    choice = input("\nEnter your choice (1/2): ")
     return choice
 
 def main():
@@ -32,8 +30,6 @@ def main():
         if choice == "1":
             message = run_clock_in_out()
         elif choice == "2":
-            message = run_job_tracking()   # Call the function here
-        elif choice == "3":
             break
         else:
             message = LIGHT_RED + "ERROR: Invalid choice. Please select again." + RESET_COLOR

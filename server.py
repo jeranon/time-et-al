@@ -9,7 +9,6 @@ SHIFT_FILE_PATH = os.path.join("data", "reference", "shifts.json")
 # Function to get the server's IP address
 def get_server_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # We use a dummy IP here to establish a connection in the OS and fetch the local endpoint IP
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
     s.close()
@@ -207,7 +206,7 @@ def handle_clock_in_out(data, client_address, client_socket):
         }
         
         write_time_data(employee_id, employee_name, employee_states[employee_id]['state'], client_info)
-        update_client_data(client_info)
+        # update_client_data(client_info)  # Commented out as per the instruction
 
         client_socket.sendall(f"{message}\n".encode())
 
@@ -235,7 +234,7 @@ def update_employee_data(employee_id, employee_name):
 
     with open(employees_path, "w") as file:
         json.dump(employees, file, indent=4)
-
+        
 def update_client_data(client_info):
     clients_path = os.path.join(config["paths"]["reference_dir"], "clients.json")
     with open(clients_path, "r") as file:
@@ -244,36 +243,6 @@ def update_client_data(client_info):
         clients.append(client_info)
         with open(clients_path, "w") as file:
             json.dump(clients, file, indent=4)
-
-def handle_check_employee_request(data):
-    """
-    Check if the provided employee ID is valid and if the employee is clocked in.
-    This check can be bypassed based on the 'bypass_clocked_in_requirement' config setting.
-    """
-    employee_id, employee_name = data.split('|')
-    
-    # Check if employee ID and name are valid
-    if employee_id not in employee_info or employee_info[employee_id] != employee_name:
-        log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Invalid ID or Name mismatch.")
-        return "ERROR: Invalid Employee ID or Name mismatch."
-
-    # Bypass clocked-in check based on configuration
-    if not config.get('bypass_clocked_in_requirement', False):
-        if employee_id not in employee_states or employee_states[employee_id]['state'] == 0:
-            log_event("JOB_TRACKING", f"Failed check for {employee_name} ({employee_id}): Employee not clocked in.")
-            return "ERROR: Employee not clocked in."
-
-    log_event("JOB_TRACKING", f"Successful check for {employee_name} ({employee_id}): Employee is clocked in.")
-    return f"SUCCESS: Thank you, {employee_name}. Please proceed below."
-
-def handle_process_request(employee_id, employee_name, job_num):
-    """
-    Handle the job number processing for the given employee ID.
-    """
-    write_job_tracking_data(employee_id, job_num)
-    response = f"SUCCESS: {employee_name} scanned onto job #: {job_num}"
-    log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
-    return response
 
 def handle_onboarding_request(data):
     try:
@@ -311,60 +280,8 @@ def handle_onboarding_request(data):
         return error_message
 
 def load_shifts():
-    """
-    Load the shifts from shifts.json.
-    """
     with open(SHIFT_FILE_PATH, 'r') as file:
         return json.load(file)
-
-def write_job_tracking_data(employee_id, job_num):
-    start_date, _ = get_current_pay_period()
-    year = datetime.now().year
-    current_day = datetime.now().strftime("%Y-%m-%d")
-    
-    file_path = os.path.join(config["paths"]["job_scans_dir"], str(year), start_date, f"{current_day}.json")
-
-    directory = os.path.dirname(file_path)  # Define the directory variable
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    
-    current_data = {}
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            current_data = json.load(file)
-    
-    current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    if employee_id not in current_data:
-        current_data[employee_id] = []
-        
-    shift_name = employee_states[employee_id]["shift"]
-
-    if job_num == 'EXITJOBS':
-        # Handle the EXITJOBS scan
-        if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
-            current_data[employee_id][-1]['job_end'] = current_timestamp
-            start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
-            end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
-            duration = (end_time - start_time).total_seconds()
-            current_data[employee_id][-1]['total_time'] = duration
-        # Do not start a new job scan for EXITJOBS
-    else:
-        # Normal job scan handling
-        if current_data[employee_id] and 'job_end' not in current_data[employee_id][-1]:
-            current_data[employee_id][-1]['job_end'] = current_timestamp
-            start_time = datetime.strptime(current_data[employee_id][-1]['job_start'], "%Y-%m-%d %H:%M:%S")
-            end_time = datetime.strptime(current_data[employee_id][-1]['job_end'], "%Y-%m-%d %H:%M:%S")
-            duration = (end_time - start_time).total_seconds()
-            current_data[employee_id][-1]['total_time'] = duration
-        current_data[employee_id].append({
-            "job_start": current_timestamp,
-            "job_num": job_num,
-            "shift_name": shift_name
-        })
-
-    with open(file_path, 'w') as file:
-        json.dump(current_data, file, indent=4)
 
 def handle_offboarding_request(data):
     try:
@@ -390,9 +307,6 @@ def update_employee_active_status(employee_id, active_status):
     save_employee_states(employee_id)
 
 def handle_reactivation_request(data):
-    """
-    Handle the reactivation request to reactivate an existing employee.
-    """
     try:
         employee_id = data.strip()
 
@@ -401,7 +315,6 @@ def handle_reactivation_request(data):
             log_event("REACTIVATION", message)
             return message
 
-        # Reactivate the employee
         update_employee_active_status(employee_id, 1)
 
         message = f"SUCCESS: Employee with ID {employee_id} reactivated."
@@ -429,40 +342,17 @@ while True:
                 print(f"Accepted connection from {client_address}")
 
                 data = client_socket.recv(1024).decode().strip()
-                # print(f"Received from client: {data}")  # debugging line
-
                 if data.startswith("CLOCK:"):
                     handle_clock_in_out(data[6:], client_address, client_socket)  # Pass everything after "CLOCK:"
-                elif data.startswith("JOB:CHECK_EMPLOYEE:"):
-                    response = handle_check_employee_request(data.split(":")[2])
-                    log_event("JOB_TRACKING", f"Checked employee status for job tracking: {response}")
-                    client_socket.sendall(response.encode())
-                    # print(f"Sending to client: {response}")  # debugging line
-                elif data.startswith("JOB:PROCESS:"):
-                    components = data.split(":")[2].split("|")
-                    if len(components) != 3:
-                        print("ERROR: Incorrect format received from client.")
-                        log_event("ERROR", "Incorrect format received from client for job processing.")
-                        continue
-                    emp_id, employee_name, job_num = components
-                    response = handle_process_request(emp_id, employee_name, job_num)
-                    log_event("JOB_TRACKING", f"Processed job number for {employee_name}: {response}")
-                    client_socket.sendall(response.encode())
-                    # print(f"Sending to client: {response}\n")  # debugging line
                 elif data.startswith("ONBOARD:"):
-                    # print("ONBOARD request identified!")  # Debugging line
                     response = handle_onboarding_request(data[8:])
-                    # print(f"Response from handle_onboarding_request: {response}")  # Debugging
                     client_socket.sendall(response.encode())
-                    # print(f"Sending to client: {response}")  # Debugging
                 elif data.startswith("OFFBOARD:"):
                     response = handle_offboarding_request(data[9:])
                     client_socket.sendall(response.encode())
                 elif data.startswith("REACTIVATE:"):
                     response = handle_reactivation_request(data[11:])
                     client_socket.sendall(response.encode())
-                # else:
-                    # print(f"Unknown request type: {data}") # Debugging line
                 client_socket.close()
 
     except KeyboardInterrupt:
