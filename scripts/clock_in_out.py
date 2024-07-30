@@ -107,7 +107,7 @@ def display_message_and_prompt(message="", status_display=""):
     print(title_line)
     print(LIGHT_BLUE + "---------------------------------------------\n" + RESET_COLOR)
     print(status_display)
-    print("\nPlease scan employee data or type 'exit' to quit:")
+    print("\nPlease scan employee ID:")
 
 def set_console_buffer_size(lines=1000):
     """
