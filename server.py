@@ -326,6 +326,22 @@ def handle_reactivation_request(data):
         log_event("ERROR", error_message)
         return error_message
 
+def handle_status_request(client_socket):
+    try:
+        status_list = []
+        for emp_id, state_info in employee_states.items():
+            if state_info["active"] == 1:  # Only include active employees
+                name = employee_info.get(emp_id, "Unknown")
+                status = "IN" if state_info["state"] == 1 else "OUT"
+                status_list.append(f"{name}|{status}")
+        response = "\n".join(status_list)
+        client_socket.sendall(response.encode())
+    except Exception as e:
+        error_message = f"ERROR: Failed to fetch status due to: {str(e)}"
+        print(error_message)
+        log_event("ERROR", error_message)
+        client_socket.sendall(f"{error_message}\n".encode())
+
 update_server_ip()
 initialize_employee_data()
 
@@ -353,6 +369,8 @@ while True:
                 elif data.startswith("REACTIVATE:"):
                     response = handle_reactivation_request(data[11:])
                     client_socket.sendall(response.encode())
+                elif data.startswith("STATUS"):
+                    handle_status_request(client_socket)
                 client_socket.close()
 
     except KeyboardInterrupt:
